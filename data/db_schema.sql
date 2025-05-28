@@ -17,8 +17,10 @@ USE `virtual_wallet_db` ;
 CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Currencies` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `code` VARCHAR(3) NOT NULL,
-  `name` VARCHAR(32) NOT NULL,
-  PRIMARY KEY (`id`))
+  `name` VARCHAR(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `code_UNIQUE` (`code` ASC) VISIBLE,
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -30,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Users` (
   `username` VARCHAR(20) NOT NULL,
   `email` VARCHAR(40) NOT NULL,
   `phone_number` VARCHAR(32) NOT NULL,
-  `password_hash` VARCHAR(72) NOT NULL,
+  `password_hash` VARCHAR(64) NOT NULL,
   `is_admin` TINYINT(4) NOT NULL DEFAULT 0,
   `is_blocked` TINYINT(4) NOT NULL DEFAULT 0,
   `is_verified` TINYINT(4) NOT NULL DEFAULT 0,

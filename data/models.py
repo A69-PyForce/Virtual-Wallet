@@ -1,3 +1,4 @@
+from utils.currencies_utils import ALL_CURRENCY_CODES
 from pydantic import BaseModel, StringConstraints
 from typing import Annotated
 
