@@ -60,7 +60,7 @@ def decrypt_card_info(encrypted_card: str) -> BankCardInfo | None:
 
 if __name__ == "__main__": # Run some tests for the functions in here if file is run as main
     
-    date = datetime.now().strftime(format="%m/%y") # Formats to 05/25
+    date = datetime.now().strftime(format="%m/%y") # Formats to MM/YY
     card = BankCardInfo(number="4321876509871234", expiration_date=date, card_holder="E. HADZHIVASILEV", check_number="123")
     print(f"Original card info: {card}")
 
