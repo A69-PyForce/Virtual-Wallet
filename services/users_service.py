@@ -1,6 +1,5 @@
 import utils.user_auth_token_utils as user_auth_token_utils
 import utils.user_password_utils as user_password_utils
-from data.models import UserFromDB
 from mariadb import IntegrityError
 from data.database import *
 from data.models import *

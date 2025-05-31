@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from cryptography.fernet import Fernet
-from data.models import BankCardInfo
+from data.models import BankCardEncryptInfo
 from datetime import datetime
 import traceback
 import os
@@ -18,12 +18,12 @@ cipher = Fernet(_ENCRYPT_KEY)
 # Card data separator
 _SEP = '|'
     
-def encrypt_card_info(card: BankCardInfo) -> str | None:
+def encrypt_card_info(card: BankCardEncryptInfo) -> str | None:
     """
     Try to encrypt card details using AES-based encryption.
     
     Args:
-        card (CardInfo): The card information.
+        card (BankCardEncryptInfo): The card information.
         
     Returns:
         str|None: The encrypted string if successful or None if error occured during encryption
@@ -37,20 +37,20 @@ def encrypt_card_info(card: BankCardInfo) -> str | None:
         print(traceback.format_exc())
         return None
 
-def decrypt_card_info(encrypted_card: str) -> BankCardInfo | None:
+def decrypt_card_info(encrypted_card: str) -> BankCardEncryptInfo | None:
     """
-    Try to decrypt a encrypted card details back to a BankCardInfo object.
+    Try to decrypt a encrypted card details back to a BankCardEncryptInfo object.
     
     Args:
         encrypted_card (str): The encrypted card information.
         
     Returns:
-        CardInfo|None: The decrypted CardInfo object or None if error occured during decryption.
+        BankCardEncryptInfo|None: The decrypted BankCardEncryptInfo object or None if error occured during decryption.
     """
     try:
         decrypted_data = cipher.decrypt(encrypted_card.encode('utf-8')).decode('utf-8')
         number, expiration_date, card_holder, check_number = decrypted_data.split(_SEP)
-        return BankCardInfo(
+        return BankCardEncryptInfo(
             number=number, expiration_date=expiration_date,
             card_holder=card_holder, check_number=check_number
         )
@@ -61,7 +61,7 @@ def decrypt_card_info(encrypted_card: str) -> BankCardInfo | None:
 if __name__ == "__main__": # Run some tests for the functions in here if file is run as main
     
     date = datetime.now().strftime(format="%m/%y") # Formats to MM/YY
-    card = BankCardInfo(number="4321876509871234", expiration_date=date, card_holder="E. HADZHIVASILEV", check_number="123")
+    card = BankCardEncryptInfo(number="4321876509871234", expiration_date=date, card_holder="E. HADZHIVASILEV", check_number="123")
     print(f"Original card info: {card}")
 
     encrypted_card = encrypt_card_info(card)
