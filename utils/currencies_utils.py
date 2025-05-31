@@ -22,17 +22,17 @@ if not _EXCHANGE_RATE_API_KEY:
 
 CACHE_FILE = "currencies_cache.json"
 
-def cache_all_currency_codes():
+def cache_all_currencies():
     
     # Create a variable for type checking in models
-    global ALL_CURRENCY_CODES
+    global ALL_CURRENCIES
     
     try:
         # Try to read cached json
         # Check if the cache file exists and is non-empty
         if os.path.exists(CACHE_FILE) and os.path.getsize(CACHE_FILE) > 0:
             with open(CACHE_FILE, "r") as f:
-                ALL_CURRENCY_CODES = tuple(json.load(f))
+                ALL_CURRENCIES = tuple(json.load(f))
                 
             print(f"[INFO / CURRENCIES UTILS] Loaded currency codes from {CACHE_FILE}.")
         
@@ -45,11 +45,11 @@ def cache_all_currency_codes():
                 response = client.get(URL)
                 response.raise_for_status() # raise the error if API sent one
                 data = response.json()
-                ALL_CURRENCY_CODES = (pair for pair in data["supported_codes"])
+                ALL_CURRENCIES = (pair for pair in data["supported_codes"])
                 
                 # Save to cache (json file)
                 with open(CACHE_FILE, "w") as f:
-                    json.dump(list(ALL_CURRENCY_CODES), f)
+                    json.dump(list(ALL_CURRENCIES), f)
                     
             print(f"[INFO / CURRENCIES UTILS] Called API and cached currency codes in {CACHE_FILE}.")
             
@@ -59,10 +59,7 @@ def cache_all_currency_codes():
 
 def dump_all_currencies():
     
-    # Call cache func to ensure ALL_CURRENCY_CODES exists
-    cache_all_currency_codes()
-    
-    for pair in ALL_CURRENCY_CODES:
+    for pair in ALL_CURRENCIES:
         # Create a new CurrencyInfo object and call service to add it to db
         currency = CurrencyInfo(code=pair[0], name=pair[1])
         
@@ -72,3 +69,6 @@ def dump_all_currencies():
         except IntegrityError: # DB will throw an integrety error if code/name already exist
             print(f"[WARN / CURRENCIES UTILS] {currency} already exists in database.")
             pass
+        
+# Call cache func to ensure ALL_CURRENCIES exists
+cache_all_currencies()
