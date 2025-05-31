@@ -37,7 +37,7 @@ def check_password(password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(
             password=base64.b64encode(hashlib.sha256(password.encode('utf-8')).digest()),
-            hashed_password=hashed_password
+            hashed_password=hashed_password.encode('utf-8')
         )
     except:
         print(traceback.format_exc())

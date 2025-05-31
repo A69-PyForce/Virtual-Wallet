@@ -12,6 +12,14 @@ class BankCardInfo(BaseModel):
     card_holder: Annotated[str, StringConstraints(min_length=2, max_length=30)]
     check_number: Annotated[str, StringConstraints(min_length=3, max_length=3)]
 
+# Used for returning card summaries in the /users/info page
+class BankCardSummary(BaseModel):
+    id: int
+    type: str
+    is_deactivated: bool
+    nickname: str | None
+    image_url: str | None
+
 # User register model - all required fields for registrating a user
 class UserRegisterInfo(BaseModel):
     # Additional validations are required, verify using regex utils before setting username
@@ -45,23 +53,38 @@ class UserFromDB(BaseModel):
     username: str
     email: str
     phone_number: str
+    password_hash: str | None
     is_admin: bool
+    is_blocked: bool
+    is_verified: bool
     balance: float
     currency_code: str
     created_at: datetime
-    avatar_url: str
+    avatar_url: str | None
     
     @classmethod
-    def from_query(cls, id, username, email, phone_number, is_admin, balance, currency_code, created_at, avatar_url):
+    def from_query(cls, id, username, email, phone_number, password_hash, is_admin, is_blocked, is_verified, balance, currency_code, created_at, avatar_url):
         return cls(
             id=id,
             username=username,
             email=email,
             phone_number=phone_number,
+            password_hash=password_hash,
             is_admin=is_admin,
+            is_blocked=is_blocked,
+            is_verified=is_verified,
             balance=balance,
             currency_code=currency_code,
             created_at=created_at,
             avatar_url=avatar_url
         )
     
+ # Used for generating a auth u_token in token utils
+class UserTokenInfo(BaseModel):
+    id: int
+    username: str
+
+# Used for returning a User info JSON for the /users/info page
+class UserInfo(BaseModel):
+    user: UserFromDB
+    cards: list[BankCardSummary]
