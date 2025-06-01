@@ -19,6 +19,9 @@ def add_card_to_user(card_info: BankCardCreateInfo, u_token: str = Header()):
     except bank_cards_service.BankCardsService_CardNotFoundError:
         return responses.NotFound(content="The given card was not found inside Bank Cards API.")
     
+    except bank_cards_service.BankCardsService_ExternalAPIError:
+        return responses.ServiceUnavailable(content="Bank cards service is unavailable. Try again later.")
+    
     except:
         print(traceback.format_exc())
         return responses.InternalServerError()
@@ -33,10 +36,13 @@ def add_card_to_user(card_info: BankCardEncryptInfo, u_token: str = Header()):
             print(traceback.format_exc())
             return responses.InternalServerError()
         
-        return responses.Created(content="Successfuly removed the requested card.")
+        return responses.OK("Successfuly removed the requested card.")
     
     except bank_cards_service.BankCardsService_CardNotFoundError:
         return responses.NotFound(content="The given card was not found for this User.")
+    
+    except bank_cards_service.BankCardsService_ExternalAPIError:
+        return responses.ServiceUnavailable("Bank Cards Service is unavailable.")
     
     except:
         print(traceback.format_exc())
@@ -47,13 +53,40 @@ def get_card_details_for_user(card_id, u_token: str = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
-        return bank_cards_service.get_card_details_by_id(card_id, user.id)
+        return bank_cards_service.get_card_details_by_id(card_id, user)
     
     except bank_cards_service.BankCardsService_CardNotFoundError:
         return responses.NotFound(content=f"Card with id {card_id} was not found for this user.")
     
     except bank_cards_service.BankCardsService_CardDeactivatedError:
         return responses.BadRequest(content=f"Card with id {card_id} is deactivated.")
+    
+    except:
+        print(traceback.format_exc())
+        return responses.InternalServerError()
+    
+@api_bank_cards_router.put(path="/{card_id}/withdraw")
+def withdraw_from_card_to_user_balance(card_id: int, amount: Amount, u_token: str = Header()):
+    user = authenticate.get_user_or_raise_401(u_token)
+    
+    try:
+        withdraw_info = TransferInfo(
+            amount=amount.amount,
+            currency_code=user.currency_code
+        )
+        is_updated = bank_cards_service.withdraw_from_card_to_user_balance(withdraw_info, card_id, user)
+        if not is_updated:
+            return responses.InternalServerError()
+        return responses.OK(f"{withdraw_info.amount} {withdraw_info.currency_code} were deposited into your User account.")
+    
+    except bank_cards_service.BankCardsService_CardNotFoundError:
+        return responses.NotFound(content=f"Card with id {card_id} was not found for this user.")
+    
+    except bank_cards_service.BankCardsService_CardDeactivatedError:
+        return responses.BadRequest(content=f"Card with id {card_id} is deactivated.")
+    
+    except bank_cards_service.BankCardsService_CardInsufficientFundsError:
+        return responses.BadRequest(content=f"Card has insufficient funds for this withdraw.")
     
     except:
         print(traceback.format_exc())

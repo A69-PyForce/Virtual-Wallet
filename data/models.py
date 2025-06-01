@@ -44,6 +44,15 @@ class BankCardFullInfo(BaseModel):
     is_deactivated: bool
     nickname: str | None
     image_url: str | None
+    
+# Request Body model used for sending requests for depositing or withdrawing from a bank card
+class TransferInfo(BaseModel):
+    amount: int | float
+    currency_code: str
+    
+# Amount used in routers for withdraw/deposit
+class Amount(BaseModel):
+    amount: int | float
 
 # User register model - all required fields for registrating a user
 class UserRegisterInfo(BaseModel):

@@ -1,5 +1,6 @@
+from typing import Any, Mapping
 from fastapi import Response
-
+from starlette.background import BackgroundTask
 class BadRequest(Response):
     def __init__(self, content=''):
         super().__init__(status_code=400, content=content)
@@ -27,3 +28,11 @@ class InternalServerError(Response):
 class Created(Response):
     def __init__(self, content=''):
         super().__init__(status_code=201, content=content)
+
+class ServiceUnavailable(Response):
+    def __init__(self, content=''):
+        super().__init__(status_code=503, content=content)
+        
+class OK(Response):
+    def __init__(self, content=''):
+        super().__init__(status_code=200, content=content)
