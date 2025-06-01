@@ -1,16 +1,33 @@
 from pydantic import BaseModel, StringConstraints, field_validator
 from utils.currencies_utils import ALL_CURRENCIES
+from typing import Annotated, Optional
 from datetime import datetime
-from typing import Annotated
+
 
 # NOTE: All field constraints are based on database key limitations
 
- # Used only to test the bank card utils, subject to change since db table is different from this.
-class BankCardInfo(BaseModel):
+# Used encrypting and decrypting card information
+class BankCardEncryptInfo(BaseModel):
     number: Annotated[str, StringConstraints(min_length=16, max_length=16)]
     expiration_date: Annotated[str, StringConstraints(min_length=5, max_length=5)]
     card_holder: Annotated[str, StringConstraints(min_length=2, max_length=30)]
     check_number: Annotated[str, StringConstraints(min_length=3, max_length=3)]
+    
+# Used for creating a new card inside database
+class BankCardCreateInfo(BaseModel):
+    card_info: BankCardEncryptInfo
+    
+    # Uses custom field validator for the type, can be either DEBIT or CREDIT
+    type: Annotated[str, StringConstraints(min_length=5, max_length=6)]
+    @field_validator("type")
+    @classmethod
+    def validate_currency_code(cls, value):
+        if value not in ("DEBIT", "CREDIT"):
+            raise ValueError(f"Invalid card type: {value}.")
+        return value
+    
+    nickname: Optional[str] = None
+    image_url: Optional[str] = None
 
 # Used for returning card summaries in the /users/info page
 class BankCardSummary(BaseModel):
@@ -19,6 +36,23 @@ class BankCardSummary(BaseModel):
     is_deactivated: bool
     nickname: str | None
     image_url: str | None
+    
+# Used for returning the full information of a given card
+class BankCardFullInfo(BaseModel):
+    card: BankCardEncryptInfo
+    type: str
+    is_deactivated: bool
+    nickname: str | None
+    image_url: str | None
+    
+# Request Body model used for sending requests for depositing or withdrawing from a bank card
+class TransferInfo(BaseModel):
+    amount: int | float
+    currency_code: str
+    
+# Amount used in routers for withdraw/deposit
+class Amount(BaseModel):
+    amount: int | float
 
 # User register model - all required fields for registrating a user
 class UserRegisterInfo(BaseModel):

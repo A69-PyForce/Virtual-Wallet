@@ -72,6 +72,7 @@ def user_login(login_info: UserLoginInfo):
         
         # Create u-token and return
         u_token = encode_u_token(user)
+        if not u_token: return responses.InternalServerError()
         return {"u-token": u_token}
     
     # If check password returned False
