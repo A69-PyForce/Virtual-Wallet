@@ -36,6 +36,14 @@ class BankCardSummary(BaseModel):
     is_deactivated: bool
     nickname: str | None
     image_url: str | None
+    
+# Used for returning the full information of a given card
+class BankCardFullInfo(BaseModel):
+    card: BankCardEncryptInfo
+    type: str
+    is_deactivated: bool
+    nickname: str | None
+    image_url: str | None
 
 # User register model - all required fields for registrating a user
 class UserRegisterInfo(BaseModel):
