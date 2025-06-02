@@ -102,5 +102,39 @@ def withdraw_from_bank_card(card_lookup_hash: str, withdraw_info: TransferInfo):
         detail="Bank Cards API is offline.",
         status_code=503
     )
+    
+def deposit_to_bank_card(card_lookup_hash: str, deposit_info: TransferInfo):
+    
+    # Check if API is online
+    if is_bank_cards_api_online():
+        
+        # Send PUT request to API
+        response = requests.put(
+            url=f"http://{HOST_URL}:{PORT}/bankcards/deposit/{card_lookup_hash}",
+            json={
+                "amount": deposit_info.amount,
+                "currency_code": deposit_info.currency_code
+            }
+        )
+        # If deposit is completed successfuly (API returns code 200) return CardTransferResponse object
+        if response.status_code == 200:
+            response = response.json()
+            return CardTransferResponse(
+                amount=response["amount"],
+                currency_code=response["currency_code"],
+                transfer_type=response["transfer_type"]
+            )
+        # If status code isn't 200 return an error object
+        else:
+            return APIErrorResponse(
+                detail=response.json()["detail"],
+                status_code=response.status_code
+            )
+            
+    # If API was offline 
+    return APIErrorResponse(
+        detail="Bank Cards API is offline.",
+        status_code=503
+    )
             
             
