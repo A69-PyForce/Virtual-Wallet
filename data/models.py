@@ -26,8 +26,8 @@ class BankCardCreateInfo(BaseModel):
             raise ValueError(f"Invalid card type: {value}.")
         return value
     
-    nickname: Optional[str] = None
-    image_url: Optional[str] = None
+    nickname: Optional[Annotated[str, StringConstraints(min_length=1, max_length=40)]] = None
+    image_url: Optional[Annotated[str, StringConstraints(min_length=1, max_length=256)]] = None
 
 # Used for returning card summaries in the /users/info page
 class BankCardSummary(BaseModel):
@@ -50,9 +50,17 @@ class TransferInfo(BaseModel):
     amount: int | float
     currency_code: str
     
-# Amount used in routers for withdraw/deposit
+# Amount used in API router for withdraw/deposit
 class Amount(BaseModel):
     amount: int | float
+    
+# Used in API router  for chaning a card nickname
+class BankCardNickname(BaseModel):
+    nickname: Annotated[str, StringConstraints(min_length=1, max_length=40)] | None
+
+# Used in API router for chaning a card image url
+class BankCardImageURL(BaseModel):
+    image_url: Annotated[str, StringConstraints(min_length=1, max_length=256)] | None
 
 # User register model - all required fields for registrating a user
 class UserRegisterInfo(BaseModel):

@@ -76,6 +76,7 @@ def withdraw_from_card_to_user_balance(card_id: int, amount: Amount, u_token: st
         )
         is_updated = bank_cards_service.withdraw_from_card_to_user_balance(withdraw_info, card_id, user)
         if not is_updated:
+            print(traceback.format_exc())
             return responses.InternalServerError()
         return responses.OK(f"{withdraw_info.amount} {withdraw_info.currency_code} were deposited into your User account.")
     
@@ -87,6 +88,63 @@ def withdraw_from_card_to_user_balance(card_id: int, amount: Amount, u_token: st
     
     except bank_cards_service.BankCardsService_CardInsufficientFundsError:
         return responses.BadRequest(content=f"Card has insufficient funds for this withdraw.")
+    
+    except:
+        print(traceback.format_exc())
+        return responses.InternalServerError()
+    
+@api_bank_cards_router.put(path="/{card_id}/deposit")
+def deposit_to_card_from_user_balance(card_id: int, amount: Amount, u_token: str = Header()):
+    user = authenticate.get_user_or_raise_401(u_token)
+    
+    try:
+        deposit_info = TransferInfo(
+            amount=amount.amount,
+            currency_code=user.currency_code
+        )
+        is_updated = bank_cards_service.deposit_to_card_from_user_balance(deposit_info, card_id, user)
+        if not is_updated:
+            print(traceback.format_exc())
+            return responses.InternalServerError()
+        return responses.OK(f"{deposit_info.amount} {deposit_info.currency_code} were deposited into back into your bank card.")
+    
+    except bank_cards_service.BankCardsService_CardNotFoundError:
+        return responses.NotFound(content=f"Card with id {card_id} was not found for this user.")
+    
+    except bank_cards_service.BankCardsService_CardDeactivatedError:
+        return responses.BadRequest(content=f"Card with id {card_id} is deactivated.")
+    
+    except bank_cards_service.BankCardsService_UserInsufficientFundsError:
+        return responses.BadRequest(content=f"User has insufficient funds for this deposit.")
+    
+    except:
+        print(traceback.format_exc())
+        return responses.InternalServerError()
+    
+@api_bank_cards_router.put(path="/{card_id}/nickname")
+def change_user_card_nickname(card_id: int, name: BankCardNickname, u_token: str = Header()):
+    user = authenticate.get_user_or_raise_401(u_token)
+    
+    try:
+        is_updated = bank_cards_service.change_user_card_nickname(name.nickname, card_id, user)
+        if not is_updated:
+            return responses.NotFound(f"Card with id {card_id} was not found for this user.")
+        return responses.OK(f"Successfuly changed the card's nickname to '{name.nickname}'.")
+    
+    except:
+        print(traceback.format_exc())
+        return responses.InternalServerError()
+    
+    
+@api_bank_cards_router.put(path="/{card_id}/image")
+def change_user_card_nickname(card_id: int, image: BankCardImageURL, u_token: str = Header()):
+    user = authenticate.get_user_or_raise_401(u_token)
+    
+    try:
+        is_updated = bank_cards_service.change_user_card_image_url(image.image_url, card_id, user)
+        if not is_updated:
+            return responses.NotFound(f"Card with id {card_id} was not found for this user.")
+        return responses.OK(f"Successfuly changed the card's image url.")
     
     except:
         print(traceback.format_exc())

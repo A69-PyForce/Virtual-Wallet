@@ -18,6 +18,9 @@ class BankCardsService_CardDeactivatedError(BankCardsService_Error):
 class BankCardsService_CardInsufficientFundsError(BankCardsService_Error):
     pass
 
+class BankCardsService_UserInsufficientFundsError(BankCardsService_Error):
+    pass
+
 class BankCardsService_ExternalAPIError(BankCardsService_Error):
     pass
 
@@ -143,9 +146,71 @@ def withdraw_from_card_to_user_balance(withdraw_info: TransferInfo, card_id: int
             raise BankCardsService_ExternalAPIError("An issue occured with the external Bank Cards API.")
         
     # If all is well means API has withdrawn funds from the card there, we need to update the User balance
-    sql = """UPDATE Users SET balance = balance + ? 
-    WHERE id = ? AND username = ?"""
+    sql = "UPDATE Users SET balance = balance + ? WHERE id = ? AND username = ?"
     return update_query(sql=sql, sql_params=(withdraw_response.amount, user.id, user.username,))
+
+def deposit_to_card_from_user_balance(deposit_info: TransferInfo, card_id: int, user: UserFromDB):
+    
+    # Get full card info for API request first, call get_card_details_by_id for that,
+    # create CardEncryptInfo from result
+    card_details = get_card_details_by_id(card_id, user)
+    card_info = BankCardEncryptInfo(
+        number=card_details.card.number,
+        expiration_date=card_details.card.expiration_date,
+        card_holder=card_details.card.card_holder,
+        check_number=card_details.card.check_number
+    )
+    
+    # Call Bank Cards API client to get card lookup hash and to check if it even exists there
+    response = bank_cards_api_client.get_bank_card_info_response(card_info)
+    
+    # API Client returns APIErrorResponse if Bank Cards API returned an error
+    if isinstance(response, bank_cards_api_client.APIErrorResponse):
+        
+        # API should return 404 if card was not found
+        if response.status_code == 404:
+            raise BankCardsService_CardNotFoundError("Card not found inside the Bank Cards API.")
+        
+        # Else raise generic error since we dont want to continue
+        else:
+            raise BankCardsService_ExternalAPIError("An issue occured with the external Bank Cards API.")
+        
+    # Before depositing we need to check if User has enough balance for this transaction
+    if user.balance < deposit_info.amount:
+        raise BankCardsService_UserInsufficientFundsError("User has insufficient funds for this transaction.")
+        
+    # If all is well call API client again this time with the card lookup hash we got from card info
+    deposit_response = bank_cards_api_client.deposit_to_bank_card(
+        card_lookup_hash=response.card_lookup_hash,
+        deposit_info=deposit_info
+    )
+    
+    # Same as before client returns error response if an issue occured
+    if isinstance(deposit_response, bank_cards_api_client.APIErrorResponse):
+        
+        # API should return 404 if card was not found
+        if deposit_response.status_code == 404:
+            raise BankCardsService_CardNotFoundError("Card not found inside the Bank Cards API.")
+        
+        # Else raise generic error since we dont want to continue
+        else:
+            raise BankCardsService_ExternalAPIError("An issue occured with the external Bank Cards API.")
+        
+    # If all is well means API has deposited funds to the card there, we need to update the User balance
+    sql = "UPDATE Users SET balance = balance - ? WHERE id = ? AND username = ?"
+    return update_query(sql=sql, sql_params=(deposit_response.amount, user.id, user.username,))
+
+def change_user_card_nickname(nickname: str, card_id: int, user: UserFromDB):
+    
+    # Update card nickname in database with this query
+    sql = "UPDATE BankCards SET nickname = ? WHERE id = ? AND user_id = ?"
+    return update_query(sql=sql, sql_params=(nickname, card_id, user.id,))
+
+def change_user_card_image_url(image_url: str, card_id: int, user: UserFromDB):
+    
+    # Update card image_url in database with this query
+    sql = "UPDATE BankCards SET image_url = ? WHERE id = ? AND user_id = ?"
+    return update_query(sql=sql, sql_params=(image_url, card_id, user.id,))
     
     
     
