@@ -36,3 +36,7 @@ class ServiceUnavailable(Response):
 class OK(Response):
     def __init__(self, content=''):
         super().__init__(status_code=200, content=content)
+        
+class Conflict(Response):
+    def __init__(self, content=''):
+        super().__init__(status_code=409, content=content)

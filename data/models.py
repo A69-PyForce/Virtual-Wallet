@@ -130,3 +130,7 @@ class UserTokenInfo(BaseModel):
 class UserInfo(BaseModel):
     user: UserFromDB
     cards: list[BankCardSummary]
+    
+# Used in contacts router for adding/removing a contact
+class ContactInfo(BaseModel):
+    username: str
