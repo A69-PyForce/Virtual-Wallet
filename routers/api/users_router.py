@@ -2,13 +2,35 @@ import traceback
 from data.models import *
 import services.users_service as users_service
 from common import responses, authenticate
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 from utils.regex_verifictaion_utils import *
 from utils.user_auth_token_utils import *
 
 api_users_router = APIRouter(prefix='/api/users')
 
-@api_users_router.post(path='/register')
+@api_users_router.get(path="")
+def get_all_users(username: Optional[str] = Query(
+    None, description="Filter by username, partial matches are allowed."),
+    page: int = Query(default=1, ge=1, description="Page number (starting from 1)."),
+    page_size: int = Query(default=5, ge=1, le=100, description="Number of users per page."),
+    u_token: str = Header()  
+):
+    user = authenticate.get_user_or_raise_401(u_token)
+    
+    try:
+        
+        # Call service layer and get both the list and the total count
+        users = users_service.list_users_with_total_count(
+            username_filter=username, page=page, page_size=page_size
+        )
+        # Respond with the users and pagination details
+        return UsersPaginationList(users=users, page=page, page_size=page_size)
+        
+    except:
+        print(traceback.format_exc())
+        return responses.InternalServerError()
+
+@api_users_router.post(path="/register")
 def user_register(register_info: UserRegisterInfo):
     """
     Register a new user.
@@ -68,12 +90,14 @@ def user_login(login_info: UserLoginInfo):
     # Try to login the User
     try:
         user = users_service.login_user(login_info)
-        if not user: return responses.NotFound("User with these credentials was not found.")
+        if not user: 
+            return responses.NotFound("User with these credentials was not found.")
         
         # Create u-token and return
         u_token = encode_u_token(user)
-        if not u_token: return responses.InternalServerError()
-        return {"u-token": u_token}
+        if not u_token: 
+            return responses.InternalServerError()
+        return UTokenResponse(u_token=u_token)
     
     # If check password returned False
     except users_service.UserService_LoginAuthError:
@@ -103,7 +127,6 @@ def user_info(u_token: str = Header()):
     Returns:
         User: The authenticated user's information, excluding password.
     """
-    
     # Authenticate user
     user = authenticate.get_user_or_raise_401(u_token)
     
@@ -112,4 +135,19 @@ def user_info(u_token: str = Header()):
     
     except:
         print(traceback.format_exc())
-        return responses.InternalServerError() 
+        return responses.InternalServerError()
+    
+@api_users_router.put(path="/avatar")
+def change_user_avatar_url(avatar_url: UserAvatarURL, u_token: str = Header()):
+    user = authenticate.get_user_or_raise_401(u_token)
+    
+    try:
+        is_updated =  users_service.change_user_avatar_url(user, avatar_url)
+        if not is_updated: # not too sure about this confict response here
+            return responses.Conflict("Could not update user avatar url, a conflict occurred.")
+        return responses.OK("User avatar url was successfully updated.")
+            
+    except:
+        print(traceback.format_exc())
+        return responses.InternalServerError()
+    
