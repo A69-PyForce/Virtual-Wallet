@@ -142,3 +142,32 @@ def get_user_info(username: str):
             BankCardSummary(id=row[0], type=row[1], is_deactivated=row[2], nickname=row[3], image_url=row[4])
         )
     return UserInfo(user=user, cards=cards)
+
+def list_users_with_total_count(username_filter: Optional[str], page: int, page_size: int):
+    offset = (page - 1) * page_size
+    
+    # Build filter condition
+    where_clause = " WHERE is_blocked = 0 AND is_verified = 1"
+    sql_params = []
+    
+    if username_filter:
+        where_clause = " AND username LIKE ?"
+        sql_params.append(f"%{username_filter}%")
+    
+    # Build the main SQL query for paged users data
+    users_sql = "SELECT id, username, avatar_url FROM Users" + where_clause + " ORDER BY username LIMIT ? OFFSET ?"
+    
+    # Append pagination parameters
+    sql_params.extend([page_size, offset])
+    
+    # Exec the users query
+    users_list = read_query(sql=users_sql, sql_params=tuple(sql_params))
+    
+    # Return the list with user info
+    return [UserListInfo(id=user[0], username=user[1], avatar_url=user[2]) for user in users_list]
+
+def change_user_avatar_url(user: UserFromDB, avatar_url: UserAvatarURL):
+    
+    # Query to do the thingie 
+    sql = "UPDATE Users SET avatar_url = ? WHERE id = ? AND username = ?"
+    return insert_query(sql=sql, sql_params=(avatar_url.avatar_url, user.id, user.username,)) != 0
