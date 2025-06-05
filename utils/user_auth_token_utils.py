@@ -10,10 +10,10 @@ _JWT_ENCRYPT_KEY = os.getenv("JWT_ENCRYPT_KEY")
 
 def encode_u_token(user: UserTokenInfo, expires_in_minutes: int = 10) -> str | None:
     """
-    Encode a JWT User token from a User object with a default expiration time of 10 minutes.
+    Encode a JWT User token from a UserTokenInfo object with a default expiration time of 10 minutes.
 
     Args:
-        user (User): The User object to encode the token with.
+        user (UserTokenInfo): The UserTokenInfo object to encode the token with.
         expires_in_minutes (int): Time in minutes from now when the token will expire.
 
     Returns:

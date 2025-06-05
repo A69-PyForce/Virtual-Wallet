@@ -4,7 +4,7 @@ from pydantic import BaseModel, StringConstraints, field_validator, Field
 from utils.currencies_utils import ALL_CURRENCIES
 from typing import Annotated, Optional
 from datetime import datetime
-
+import phonenumbers
 
 # NOTE: All field constraints are based on database key limitations
 
@@ -75,7 +75,18 @@ class UserRegisterInfo(BaseModel):
     # Additional validations are required, verify using regex utils before setting password
     password: Annotated[str, StringConstraints(min_length=4, max_length=40)]
     
-    phone_number: Annotated[str, StringConstraints(min_length=6, max_length=32)]
+    # Uses custom field validator for phone number, must have a region code +359 for example and be overall a valid number
+    phone_number: str
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, value):
+        try:
+            parsed = phonenumbers.parse(value)
+            if not phonenumbers.is_valid_number(parsed):
+                raise ValueError(f"Phone number '{value}' is invalid.")
+            return value
+        except Exception as e:
+            raise ValueError(f"Phone number error: {e}")
     
     # Uses custom field validator for the code, during db storage converts to currency_id (match from Currencies table)
     currency_code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
@@ -128,10 +139,34 @@ class UserTokenInfo(BaseModel):
     id: int
     username: str
 
+# Used for returning a list of all users in users service
+class UserListInfo(BaseModel):
+    id: int
+    username: str
+    avatar_url: str | None
+
+# Used in get_all_users endpoint in users router to return all users
+class UsersPaginationList(BaseModel):
+    users: list[UserListInfo]
+    page: int
+    page_size: int
+
 # Used for returning a User info JSON for the /users/info page
 class UserInfo(BaseModel):
     user: UserFromDB
     cards: list[BankCardSummary]
+
+# Used in contacts router for adding/removing a contact
+class ContactInfo(BaseModel):
+    username: str
+
+# Used in users router for changing avatar url
+class UserAvatarURL(BaseModel):
+    avatar_url: Annotated[str, StringConstraints(min_length=1, max_length=256)] | None
+
+# Used for returning User auth token response
+class UTokenResponse(BaseModel):
+    u_token: str
 
 class TransactionCategoryCreate(BaseModel):
     name: Annotated[str, StringConstraints(min_length=2, max_length=40)]
