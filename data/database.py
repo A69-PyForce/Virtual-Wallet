@@ -1,7 +1,10 @@
+from dotenv import load_dotenv
 from mariadb.connections import Connection
 from mariadb import ConnectionPool
 import atexit
 import os
+
+load_dotenv()
 
 # Load DB config from .env for database connection.
 DB_CONFIG = {

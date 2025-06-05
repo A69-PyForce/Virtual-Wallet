@@ -1,4 +1,6 @@
-from pydantic import BaseModel, StringConstraints, field_validator
+from enum import Enum
+
+from pydantic import BaseModel, StringConstraints, field_validator, Field
 from utils.currencies_utils import ALL_CURRENCIES
 from typing import Annotated, Optional
 from datetime import datetime
@@ -136,13 +138,13 @@ class UserFromDB(BaseModel):
 class UserTokenInfo(BaseModel):
     id: int
     username: str
-    
+
 # Used for returning a list of all users in users service
 class UserListInfo(BaseModel):
     id: int
     username: str
     avatar_url: str | None
-    
+
 # Used in get_all_users endpoint in users router to return all users
 class UsersPaginationList(BaseModel):
     users: list[UserListInfo]
@@ -153,15 +155,61 @@ class UsersPaginationList(BaseModel):
 class UserInfo(BaseModel):
     user: UserFromDB
     cards: list[BankCardSummary]
-    
+
 # Used in contacts router for adding/removing a contact
 class ContactInfo(BaseModel):
     username: str
-    
+
 # Used in users router for changing avatar url
 class UserAvatarURL(BaseModel):
     avatar_url: Annotated[str, StringConstraints(min_length=1, max_length=256)] | None
-    
+
 # Used for returning User auth token response
 class UTokenResponse(BaseModel):
     u_token: str
+
+class TransactionCategoryCreate(BaseModel):
+    name: Annotated[str, StringConstraints(min_length=2, max_length=40)]
+    image_url: Optional[Annotated[str, StringConstraints(min_length=5, max_length=256)]] = None
+
+class TransactionCategoryOut(BaseModel):
+    id: int
+    name: str
+    image_url: Optional[str] = None
+
+class TransactionCreate(BaseModel):
+    category_id: int
+    name: Annotated[str, StringConstraints(min_length=2, max_length=32)]
+    description: Annotated[str, StringConstraints(min_length=2, max_length=256)]
+    receiver_username: Annotated[str, StringConstraints(min_length=2, max_length=20)]
+    amount: float = Field(..., gt=0)
+    currency_code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
+    is_recurring: bool = False
+
+class TransactionOut(BaseModel):
+    id: int
+    category_id: int
+    name: str
+    description: str
+    sender_id: int
+    receiver_id: int
+    amount: float
+    currency_code: str
+    is_accepted: bool
+    is_recurring: bool
+
+class IntervalType(str, Enum):
+    HOURS = "HOURS"
+    DAYS = "DAYS"
+
+class RecurringCreate(BaseModel):
+    transaction_id: int
+    interval: int
+    interval_type: IntervalType
+
+class RecurringOut(BaseModel):
+    id: int
+    transaction_id: int
+    interval: int
+    interval_type: str
+    next_exec_date: datetime
