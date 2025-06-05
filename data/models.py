@@ -1,4 +1,6 @@
-from pydantic import BaseModel, StringConstraints, field_validator
+from enum import Enum
+
+from pydantic import BaseModel, StringConstraints, field_validator, Field
 from utils.currencies_utils import ALL_CURRENCIES
 from typing import Annotated, Optional
 from datetime import datetime
@@ -130,3 +132,49 @@ class UserTokenInfo(BaseModel):
 class UserInfo(BaseModel):
     user: UserFromDB
     cards: list[BankCardSummary]
+
+class TransactionCategoryCreate(BaseModel):
+    name: Annotated[str, StringConstraints(min_length=2, max_length=40)]
+    image_url: Optional[Annotated[str, StringConstraints(min_length=5, max_length=256)]] = None
+
+class TransactionCategoryOut(BaseModel):
+    id: int
+    name: str
+    image_url: Optional[str] = None
+
+class TransactionCreate(BaseModel):
+    category_id: int
+    name: Annotated[str, StringConstraints(min_length=2, max_length=32)]
+    description: Annotated[str, StringConstraints(min_length=2, max_length=256)]
+    receiver_username: Annotated[str, StringConstraints(min_length=2, max_length=20)]
+    amount: float = Field(..., gt=0)
+    currency_code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
+    is_recurring: bool = False
+
+class TransactionOut(BaseModel):
+    id: int
+    category_id: int
+    name: str
+    description: str
+    sender_id: int
+    receiver_id: int
+    amount: float
+    currency_code: str
+    is_accepted: bool
+    is_recurring: bool
+
+class IntervalType(str, Enum):
+    HOURS = "HOURS"
+    DAYS = "DAYS"
+
+class RecurringCreate(BaseModel):
+    transaction_id: int
+    interval: int
+    interval_type: IntervalType
+
+class RecurringOut(BaseModel):
+    id: int
+    transaction_id: int
+    interval: int
+    interval_type: str
+    next_exec_date: datetime

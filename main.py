@@ -1,3 +1,4 @@
+from routers.api.transaction_categories_router import api_transaction_categories_router
 from utils.currencies_utils import dump_all_currencies
 from routers.api.users_router import api_users_router
 from routers.api.bank_cards_router import api_bank_cards_router
@@ -7,6 +8,7 @@ import uvicorn
 app = FastAPI()
 app.include_router(api_users_router, tags=["API", "Users"])
 app.include_router(api_bank_cards_router, tags=["API", "Bank Cards"])
+app.include_router(api_transaction_categories_router, tags=["API", "Transaction Categories"])
 
 
 if __name__ == "__main__":
