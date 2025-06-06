@@ -32,6 +32,11 @@ def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
     if sender.balance < data.amount:
         raise TransactionServiceError("Insufficient funds.")
 
+    check_cat = read_query("SELECT id FROM TransactionCategories WHERE id = ? AND user_id = ?",
+                           (data.category_id, sender.id))
+    if not check_cat:
+        raise TransactionServiceError("Invalid or unauthorized category.")
+
     #blocking the amount
     update_sender = update_query("UPDATE Users SET balance = balance - ? WHERE id = ?", (data.amount, sender.id))
     if not update_sender:
@@ -64,6 +69,9 @@ def confirm_transaction(transaction_id: int, user: UserFromDB) -> bool:
     amount, currency_id, sender_id, receiver_id, is_accepted = result[0]
 
     if user.id != receiver_id or is_accepted:
+        return False
+
+    if sender_id == receiver_id:
         return False
 
     updated = update_query(
@@ -138,6 +146,10 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
 
 def create_transaction_from_recurring(sender_id: int, receiver_id: int, amount: float, currency_id: int,
     category_id: int, name: str, description: str) -> bool:
+
+    if sender_id == receiver_id:
+        print("[Recurring] Sender and receiver cannot be the same.")
+        return False
 
     balance_check = read_query("SELECT balance FROM Users WHERE id = ?", (sender_id,))
     if not balance_check or balance_check[0][0] < amount:
