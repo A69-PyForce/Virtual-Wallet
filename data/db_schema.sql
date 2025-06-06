@@ -4,7 +4,6 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
-
 -- -----------------------------------------------------
 -- Schema virtual_wallet_db
 -- -----------------------------------------------------
@@ -21,7 +20,8 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Currencies` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `code_UNIQUE` (`code` ASC) VISIBLE,
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) VISIBLE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Users` (
     REFERENCES `virtual_wallet_db`.`Currencies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -71,7 +72,8 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`BankCards` (
     REFERENCES `virtual_wallet_db`.`Users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -89,7 +91,8 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`TransactionCategories` (
     REFERENCES `virtual_wallet_db`.`Users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -106,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Transactions` (
   `currency_id` INT(11) NOT NULL,
   `is_accepted` TINYINT(4) NOT NULL DEFAULT 0,
   `is_recurring` TINYINT(4) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
   PRIMARY KEY (`id`),
   INDEX `fk_Transactions_TransactionCategories1_idx` (`category_id` ASC) VISIBLE,
   INDEX `fk_Transactions_Users1_idx` (`sender_id` ASC) VISIBLE,
@@ -125,7 +129,8 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Transactions` (
     REFERENCES `virtual_wallet_db`.`Users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
