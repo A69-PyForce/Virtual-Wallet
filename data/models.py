@@ -2,8 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel, StringConstraints, field_validator, Field
 from utils.currencies_utils import ALL_CURRENCIES
-from typing import Annotated, Optional
-from datetime import datetime
+from typing import Annotated, Optional, Literal
+from datetime import datetime, date
 import phonenumbers
 
 # NOTE: All field constraints are based on database key limitations
@@ -177,26 +177,49 @@ class TransactionCategoryOut(BaseModel):
     name: str
     image_url: Optional[str] = None
 
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id=row[0],
+            name=row[1],
+            image_url=row[2]
+        )
+
 class TransactionCreate(BaseModel):
     category_id: int
     name: Annotated[str, StringConstraints(min_length=2, max_length=32)]
     description: Annotated[str, StringConstraints(min_length=2, max_length=256)]
     receiver_username: Annotated[str, StringConstraints(min_length=2, max_length=20)]
-    amount: float = Field(..., gt=0)
+    amount: float
     currency_code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
     is_recurring: bool = False
 
 class TransactionOut(BaseModel):
     id: int
-    category_id: int
     name: str
     description: str
     sender_id: int
     receiver_id: int
     amount: float
     currency_code: str
+    category_id: int
     is_accepted: bool
     is_recurring: bool
+
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id=row[0],
+            name=row[1],
+            description=row[2],
+            sender_id=row[3],
+            receiver_id=row[4],
+            amount=row[5],
+            currency_code=row[6],
+            category_id=row[7],
+            is_accepted=bool(row[8]),
+            is_recurring=bool(row[9])
+        )
 
 class IntervalType(str, Enum):
     HOURS = "HOURS"
@@ -213,3 +236,20 @@ class RecurringOut(BaseModel):
     interval: int
     interval_type: str
     next_exec_date: datetime
+
+class TransactionFilterParams(BaseModel):
+    """
+    Query parameter model for filtering and paginating transactions.
+
+    Automatically built by FastAPI when used with Depends():
+    - Filters by date range, direction (incoming/outgoing), and category
+    - Supports sorting and pagination
+    """
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    direction: Optional[Literal["incoming", "outgoing"]] = None
+    category_id: Optional[int] = None
+    sort_by: Optional[Literal["date", "amount"]] = "date"
+    sort_order: Optional[Literal["asc", "desc"]] = "desc"
+    limit: int = Field(default=20, ge=1)
+    offset: int = Field(default=0, ge=0)
