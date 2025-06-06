@@ -7,7 +7,7 @@ def get_all_categories_for_user(user_id: int) -> list[TransactionCategoryOut]:
              FROM TransactionCategories
              WHERE user_id = ?"""
     rows = read_query(sql, (user_id,))
-    return [TransactionCategoryOut(id=row[0], name=row[1], image_url=row[2]) for row in rows]
+    return [TransactionCategoryOut.from_query(row) for row in rows]
 
 
 def create_category_for_user(category: TransactionCategoryCreate, user_id: int):
