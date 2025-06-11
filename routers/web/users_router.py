@@ -1,21 +1,40 @@
+import io
 import json
 import traceback
-from fastapi.responses import RedirectResponse
+import cloudinary
+from PIL import Image
 from data.models import *
+import cloudinary.uploader
 from utils.user_auth_token_utils import *
 from utils.regex_verifictaion_utils import *
 import services.users_service as users_service
+from fastapi.responses import RedirectResponse
 from common import responses, authenticate, template_config
 from fastapi import APIRouter, Request, Form, File, UploadFile
 
 # Load currencies from cache file
 with open('currencies_cache.json', 'r') as f:
     currencies = json.load(f)
+    
+# Load Claudinary config from .env for the user avatar and category images. |
+CLDNR_CONFIG = {
+    "cldnr_cloud_name": os.getenv("CLDNR_CLOUD_NAME"),
+    "cldnr_api_key": os.getenv("CLDNR_API_KEY"),
+    "cldnr_api_secret": os.getenv("CLDNR_API_SECRET")
+}
+if all(CLDNR_CONFIG.values()) != None:
+    cloudinary.config(
+        cloud_name=CLDNR_CONFIG["cldnr_cloud_name"],
+        api_key=CLDNR_CONFIG["cldnr_api_key"],
+        api_secret=CLDNR_CONFIG["cldnr_api_secret"]
+    )
+else:
+    CLDNR_CONFIG = None
 
 web_users_router = APIRouter(prefix='/users')
 templates = template_config.CustomJinja2Templates(directory='templates')
 
-# ====================================================== REGISTER ENDPOINTS ======================================================
+# ====================================================== REGISTER ENDPOINT ======================================================
 
 @web_users_router.get('/register')
 def serve_register(request: Request):
@@ -63,7 +82,7 @@ def user_register(request: Request, username: str = Form(...),
         return templates.TemplateResponse(request=request, name="register.html", context={"error_message":
                 "An issue occured while creating your account. Try again later.", "currencies": currencies})
         
-# ====================================================== LOGIN ENDPOINTS ======================================================
+# ====================================================== LOGIN ENDPOINT ======================================================
 
 @web_users_router.get('/login')
 def serve_login(request: Request):
@@ -112,7 +131,7 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
         return templates.TemplateResponse(request=request, name="login.html", context={"error_message":
                 "An internal issue occured. Try again later."})
         
-# ====================================================== INFO ENDPOINTS ======================================================
+# ====================================================== INFO ENDPOINT ======================================================
 @web_users_router.get('/info')
 def serve_info(request: Request):
     user = authenticate.get_user_if_token(request)
@@ -126,4 +145,52 @@ def serve_info(request: Request):
     return templates.TemplateResponse(request=request, name="user_info.html", 
                                       context={"user": user_info.user, "cards": user_info.cards})
     
+# ====================================================== AVATAR ENDPOINT ======================================================   
+
+@web_users_router.post('/info/avatar')
+def change_avatar(request: Request, file: UploadFile = File(...)):
+    user = authenticate.get_user_if_token(request)
+    if not user:
+        return RedirectResponse("/users/login", status_code=302)
+    
+    if CLDNR_CONFIG:
+        
+        try:
+            # Read uploader image
+            image_contents = file.file.read()
+            
+            # Process image with Pillow & resize
+            image = Image.open(io.BytesIO(image_contents))
+            resized_image = image.resize((192, 192))
+            
+            # Save resized image to buffer
+            buffer = io.BytesIO()
+            resized_image.save(buffer, format=image.format or "JPEG")
+            buffer.seek(0)
+            
+            # Upload image with Cloudinary and get the generated URL
+            result = cloudinary.uploader.upload(buffer, folder="virtual-wallet-user-avatars")
+            image_url = result["secure_url"]
+            
+            # Create avatar object for service
+            avatar = UserAvatarURL(avatar_url=image_url)
+            
+            # Set avatar url in DB and redirect to same page to refresh
+            users_service.change_user_avatar_url(user, avatar)
+            return RedirectResponse("/users/info", status_code=302)
+        
+        except:
+            print(traceback.format_exc())
+            pass
+    
+    # Call to same page to refresh
+    return RedirectResponse("/users/info", status_code=302)
+    
+# ====================================================== LOGOUT ENDPOINT ======================================================
+@web_users_router.get('/logout')
+def logout():
+    response = RedirectResponse(url='/', status_code=302)
+    response.delete_cookie("u-token")
+    return response # del auth cookie and redirect to homepage
+        
         
