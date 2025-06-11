@@ -266,3 +266,41 @@ class TransactionFilterParams(BaseModel):
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
     offset: int = Field(default=0, ge=0)
+
+class UserSummary(BaseModel):
+    id: int
+    username: str
+    email: str
+    phone_number: str
+    is_blocked: bool
+    is_verified: bool
+    is_admin: bool
+
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id=row[0],
+            username=row[1],
+            email=row[2],
+            phone_number=row[3],
+            is_blocked=bool(row[4]),
+            is_verified=bool(row[5]),
+            is_admin=bool(row[6])
+        )
+
+class UserFilterParams(BaseModel):
+    search: Optional[str] = None
+    is_verified: Optional[bool] = None
+    limit: int = Field(default=20, ge=1)
+    offset: int = Field(default=0, ge=0)
+
+class AdminTransactionFilterParams(BaseModel):
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    sender_id: Optional[int] = None
+    receiver_id: Optional[int] = None
+    direction: Optional[Literal["incoming", "outgoing"]] = None
+    sort_by: Optional[Literal["date", "amount"]] = "date"
+    sort_order: Optional[Literal["asc", "desc"]] = "desc"
+    limit: int = Field(default=20, ge=1)
+    offset: int = Field(default=0, ge=0)
