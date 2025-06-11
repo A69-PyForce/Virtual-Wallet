@@ -26,6 +26,10 @@ def get_transactions_for_user(user_id: int) -> list[TransactionOut]:
 
 def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
     receiver = get_user_by_username(data.receiver_username)
+
+    if sender.is_blocked:
+        raise TransactionServiceError("Blocked users cannot make transactions.")
+
     if not receiver:
         raise TransactionServiceUserNotFound("Receiver not found.")
 
