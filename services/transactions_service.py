@@ -15,7 +15,7 @@ class TransactionServiceCurrencyNotFound(TransactionServiceError):
 def get_transactions_for_user(user_id: int) -> list[TransactionOut]:
     sql = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
-               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring
+               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at
         FROM Transactions AS t
         JOIN Currencies AS c ON t.currency_id = c.id
         WHERE t.sender_id = ? OR t.receiver_id = ?
@@ -26,11 +26,20 @@ def get_transactions_for_user(user_id: int) -> list[TransactionOut]:
 
 def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
     receiver = get_user_by_username(data.receiver_username)
+
+    if sender.is_blocked:
+        raise TransactionServiceError("Blocked users cannot make transactions.")
+
     if not receiver:
         raise TransactionServiceUserNotFound("Receiver not found.")
 
     if sender.balance < data.amount:
         raise TransactionServiceError("Insufficient funds.")
+
+    check_cat = read_query("SELECT id FROM TransactionCategories WHERE id = ? AND user_id = ?",
+                           (data.category_id, sender.id))
+    if not check_cat:
+        raise TransactionServiceError("Invalid or unauthorized category.")
 
     #blocking the amount
     update_sender = update_query("UPDATE Users SET balance = balance - ? WHERE id = ?", (data.amount, sender.id))
@@ -64,6 +73,9 @@ def confirm_transaction(transaction_id: int, user: UserFromDB) -> bool:
     amount, currency_id, sender_id, receiver_id, is_accepted = result[0]
 
     if user.id != receiver_id or is_accepted:
+        return False
+
+    if sender_id == receiver_id:
         return False
 
     updated = update_query(
@@ -104,7 +116,7 @@ def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
 def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterParams) -> list[TransactionOut]:
     query = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
-               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.id
+               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at
         FROM Transactions t
         JOIN Currencies c ON t.currency_id = c.id
         WHERE (t.sender_id = ? OR t.receiver_id = ?)
@@ -112,10 +124,10 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     params = [user.id, user.id]
 
     if filters.start_date:
-        query += " AND DATE(t.id) >= ?"
+        query += " AND DATE(t.created_at) >= ?"
         params.append(filters.start_date)
     if filters.end_date:
-        query += " AND DATE(t.id) <= ?"
+        query += " AND DATE(t.created_at) <= ?"
         params.append(filters.end_date)
     if filters.direction == "incoming":
         query += " AND t.receiver_id = ?"
@@ -135,3 +147,30 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
 
     results = read_query(query, tuple(params))
     return [TransactionOut.from_query(row) for row in results]
+
+def create_transaction_from_recurring(sender_id: int, receiver_id: int, amount: float, currency_id: int,
+    category_id: int, name: str, description: str) -> bool:
+
+    if sender_id == receiver_id:
+        print("[Recurring] Sender and receiver cannot be the same.")
+        return False
+
+    balance_check = read_query("SELECT balance FROM Users WHERE id = ?", (sender_id,))
+    if not balance_check or balance_check[0][0] < amount:
+        print(f"[Recurring] Sender {sender_id} has insufficient balance.")
+        return False
+
+    update_sender = update_query("UPDATE Users SET balance = balance - ? WHERE id = ?",
+                                 (amount, sender_id))
+    if not update_sender:
+        print(f"[Recurring] Failed to deduct from sender {sender_id}.")
+        return False
+
+    insert_query("""
+        INSERT INTO Transactions (category_id, name, description, sender_id, receiver_id, amount, 
+        currency_id, is_accepted, is_recurring)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1)""",
+                 (category_id, name, description, sender_id, receiver_id, amount, currency_id))
+
+    print(f"[Recurring] Transaction created from sender {sender_id} to receiver {receiver_id}.")
+    return True

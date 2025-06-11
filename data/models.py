@@ -205,6 +205,7 @@ class TransactionOut(BaseModel):
     category_id: int
     is_accepted: bool
     is_recurring: bool
+    created_at: datetime
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -218,7 +219,8 @@ class TransactionOut(BaseModel):
             currency_code=row[6],
             category_id=row[7],
             is_accepted=bool(row[8]),
-            is_recurring=bool(row[9])
+            is_recurring=bool(row[9]),
+            created_at=row[10]
         )
 
 class IntervalType(str, Enum):
@@ -227,8 +229,9 @@ class IntervalType(str, Enum):
 
 class RecurringCreate(BaseModel):
     transaction_id: int
-    interval: int
+    interval: int # example each month
     interval_type: IntervalType
+    next_exec_date: datetime #when it will be done for the first time
 
 class RecurringOut(BaseModel):
     id: int
@@ -236,6 +239,16 @@ class RecurringOut(BaseModel):
     interval: int
     interval_type: str
     next_exec_date: datetime
+
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id=row[0],
+            transaction_id=row[1],
+            interval=row[2],
+            interval_type=row[3],
+            next_exec_date=row[4]
+        )
 
 class TransactionFilterParams(BaseModel):
     """
@@ -249,6 +262,44 @@ class TransactionFilterParams(BaseModel):
     end_date: Optional[date] = None
     direction: Optional[Literal["incoming", "outgoing"]] = None
     category_id: Optional[int] = None
+    sort_by: Optional[Literal["date", "amount"]] = "date"
+    sort_order: Optional[Literal["asc", "desc"]] = "desc"
+    limit: int = Field(default=20, ge=1)
+    offset: int = Field(default=0, ge=0)
+
+class UserSummary(BaseModel):
+    id: int
+    username: str
+    email: str
+    phone_number: str
+    is_blocked: bool
+    is_verified: bool
+    is_admin: bool
+
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id=row[0],
+            username=row[1],
+            email=row[2],
+            phone_number=row[3],
+            is_blocked=bool(row[4]),
+            is_verified=bool(row[5]),
+            is_admin=bool(row[6])
+        )
+
+class UserFilterParams(BaseModel):
+    search: Optional[str] = None
+    is_verified: Optional[bool] = None
+    limit: int = Field(default=20, ge=1)
+    offset: int = Field(default=0, ge=0)
+
+class AdminTransactionFilterParams(BaseModel):
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    sender_id: Optional[int] = None
+    receiver_id: Optional[int] = None
+    direction: Optional[Literal["incoming", "outgoing"]] = None
     sort_by: Optional[Literal["date", "amount"]] = "date"
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
