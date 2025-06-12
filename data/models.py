@@ -73,7 +73,7 @@ class UserRegisterInfo(BaseModel):
     email: Annotated[str, StringConstraints(min_length=6, max_length=40)]
     
     # Additional validations are required, verify using regex utils before setting password
-    password: Annotated[str, StringConstraints(min_length=4, max_length=40)]
+    password: Annotated[str, StringConstraints(min_length=8, max_length=40)]
     
     # Uses custom field validator for phone number, must have a region code +359 for example and be overall a valid number
     phone_number: str

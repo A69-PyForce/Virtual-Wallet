@@ -1,0 +1,9 @@
+from fastapi.templating import Jinja2Templates
+from common.authenticate import get_user_if_token
+from services.users_service import *
+
+class CustomJinja2Templates(Jinja2Templates):
+    def __init__(self, directory: str):
+        super().__init__(directory=directory)
+        self.env.globals['get_user'] = get_user_if_token
+        
