@@ -1,5 +1,5 @@
 from threading import Timer
-from datetime import datetime
+from datetime import datetime, timedelta
 from data.database import read_query, update_query
 from services.transactions_service import create_transaction_from_recurring
 
@@ -38,10 +38,19 @@ def process_due_recurring():
             print(f"Failed to execute recurring ID {recurring_id}")
             continue
 
+        now = datetime.now()
+        if interval_type == "DAYS":
+            next_exec_date = now + timedelta(days=interval)
+        elif interval_type == "HOURS":
+            next_exec_date = now + timedelta(hours=interval)
+        else:
+            print(f"Invalid interval type: {interval_type}")
+            continue
+
         # updates the next data
         update_query(
-            f"UPDATE Recurring SET next_exec_date = DATE_ADD(next_exec_date, INTERVAL {interval} {interval_type}) WHERE id = ?",
-            (recurring_id,)
+            "UPDATE Recurring SET next_exec_date = ? WHERE id = ?",
+            (next_exec_date, recurring_id)
         )
 
         print(f"Recurring ID {recurring_id} executed and scheduled next.")
