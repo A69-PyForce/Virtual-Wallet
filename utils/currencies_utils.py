@@ -22,6 +22,18 @@ if not _EXCHANGE_RATE_API_KEY:
 
 CACHE_FILE = "currencies_cache.json"
 
+async def convert_currency(amount: int|float, from_currency: str, to_currency: str) -> float:
+    if from_currency == to_currency: # Return same amount if currencies are also the same
+        return amount
+    
+    # URL for currency exchange rate conversion thing
+    URL = f"https://v6.exchangerate-api.com/v6/{_EXCHANGE_RATE_API_KEY}/pair/{from_currency}/{to_currency}/{amount}"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(URL)
+        response.raise_for_status() # Raise error if occured in the external API
+        data = response.json()
+        return data['conversion_result']
+
 def cache_all_currencies():
     
     # Create a variable for type checking in models

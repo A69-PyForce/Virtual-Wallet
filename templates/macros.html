@@ -14,26 +14,30 @@
         <div class="container">
             <h1>Virtual Wallet</h1>
             <nav class="nav">
+                <form action="/" method="get">
+                    <button class="nav-btn">Home</button>
+                </form>
                 {% if user %}
                 <form action="/users/dashboard" method="get">
-                    <button class="nav-btn hidden" id="dashboardBtn">Dashboard</button>
-                </form>
-
-                <form action="/users/profile" method="get">
-                    <button class="nav-btn hidden" id="profileBtn">Profile</button>
+                    <button class="nav-btn" id="dashboardBtn">Dashboard</button>
                 </form>
 
                 <form action="/users/settings" method="get">
-                    <button class="nav-btn hidden" id="settingsBtn">Settings</button>
+                    <button class="nav-btn" id="settingsBtn">Settings</button>
                 </form>
 
-                <form action="/users/logout" method="post">
-                    <button class="nav-btn hidden" id="logoutBtn">Logout</button>
+                <div class="nav-divider"></div>
+
+                <div class="user-profile">
+                    <img class="user-avatar" src="{{ user.avatar_url or '/static/images/default_user_avatar.png' }}"
+                        alt="User Avatar">
+                    <span class="welcome-text">{{user.username}}</span>
+                </div>
+
+                <form action="/users/logout" method="get">
+                    <button class="nav-btn" id="logoutBtn">Logout</button>
                 </form>
                 {% else %}
-                <form action="/home" method="get">
-                    <button class="nav-btn active">Home</button>
-                </form>
 
                 <form action="/users/login" method="get">
                     <button class="nav-btn" id="loginBtn">Login</button>

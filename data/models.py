@@ -1,9 +1,8 @@
-from enum import Enum
-
 from pydantic import BaseModel, StringConstraints, field_validator, Field
 from utils.currencies_utils import ALL_CURRENCIES
 from typing import Annotated, Optional, Literal
 from datetime import datetime, date
+from enum import Enum
 import phonenumbers
 
 # NOTE: All field constraints are based on database key limitations
@@ -82,11 +81,13 @@ class UserRegisterInfo(BaseModel):
     def validate_phone_number(cls, value):
         try:
             parsed = phonenumbers.parse(value)
+            
             if not phonenumbers.is_valid_number(parsed):
                 raise ValueError(f"Phone number '{value}' is invalid.")
             return value
+        
         except Exception as e:
-            raise ValueError(f"Phone number error: {e}")
+            raise ValueError(f"{e}")
     
     # Uses custom field validator for the code, during db storage converts to currency_id (match from Currencies table)
     currency_code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
@@ -94,7 +95,7 @@ class UserRegisterInfo(BaseModel):
     @classmethod
     def validate_currency_code(cls, value):
         if not any(value == pair[0] for pair in ALL_CURRENCIES):
-            raise ValueError(f"Invalid currency code: {value}.")
+            raise ValueError()
         return value
 
 # Used for loggin in a user (duh), no validations required since was already done in registration
@@ -222,6 +223,9 @@ class TransactionOut(BaseModel):
             is_recurring=bool(row[9]),
             created_at=row[10]
         )
+
+class UserTransactionsResponse(BaseModel):
+    transactions: list[TransactionOut]
 
 class IntervalType(str, Enum):
     HOURS = "HOURS"

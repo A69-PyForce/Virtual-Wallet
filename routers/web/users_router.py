@@ -5,11 +5,13 @@ import cloudinary
 from PIL import Image
 from data.models import *
 import cloudinary.uploader
+from pydantic import ValidationError
 from utils.user_auth_token_utils import *
 from utils.regex_verifictaion_utils import *
 import services.users_service as users_service
 from fastapi.responses import RedirectResponse
 from common import responses, authenticate, template_config
+import services.transactions_service as transactions_service
 from fastapi import APIRouter, Request, Form, File, UploadFile
 
 # Load currencies from cache file
@@ -73,10 +75,19 @@ def user_register(request: Request, username: str = Form(...),
         return RedirectResponse(url='/users/login', status_code=302)
         
     # BaseModel will return value error if some constraint wasn't met
-    except ValueError as ve:
+    except ValidationError as ve:
         print(traceback.format_exc())
         return templates.TemplateResponse(request=request, name="register.html", context={"error_message":
-                f"Invalid form input: {ve}", "currencies": currencies})
+                f"{ve.errors()[0]["msg"]}", "currencies": currencies})
+    
+    except users_service.UserService_DuplicateKeyError:
+            return templates.TemplateResponse(request=request, name="register.html", context={"error_message":
+                "Username, email or phone number are already in use!", "currencies": currencies})
+            
+    except users_service.UserService_InvalidCurrencyError:
+            return templates.TemplateResponse(request=request, name="register.html", context={"error_message":
+                    "Invalid Currency.", "currencies": currencies})
+    
     except:
         print(traceback.format_exc())
         return templates.TemplateResponse(request=request, name="register.html", context={"error_message":
@@ -106,7 +117,7 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
                 "Could not login user. Try again later."})
         
         token = encode_u_token(user)
-        response = RedirectResponse(url='/users/info', status_code=302)
+        response = RedirectResponse(url='/users/dashboard', status_code=302)
         response.set_cookie('u-token', token)
         return response
     
@@ -131,9 +142,9 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
         return templates.TemplateResponse(request=request, name="login.html", context={"error_message":
                 "An internal issue occured. Try again later."})
         
-# ====================================================== INFO ENDPOINT ======================================================
-@web_users_router.get('/info')
-def serve_info(request: Request):
+# ===================================================== DASHBOARD ENDPOINT =====================================================
+@web_users_router.get('/dashboard')
+def serve_dashboard(request: Request):
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -142,12 +153,30 @@ def serve_info(request: Request):
     if not user_info:
         return RedirectResponse("/users/login", status_code=302)
     
-    return templates.TemplateResponse(request=request, name="user_info.html", 
-                                      context={"user": user_info.user, "cards": user_info.cards})
+    user_transactions = transactions_service.get_transactions_for_user(user_id=user_info.user.id, limit=4)
+    
+    return templates.TemplateResponse(request=request, name="dashboard.html", 
+                                    context={"user": user_info.user, "cards": user_info.cards, 
+                                            "transactions": user_transactions.transactions})
+    
+# ===================================================== SETTINGS ENDPOINT ======================================================
+@web_users_router.get('/settings')
+def serve_settings(request: Request):
+    user = authenticate.get_user_if_token(request)
+    if not user:
+        return RedirectResponse("/users/settings", status_code=302)
+    
+    user_info = users_service.get_user_info(user.username)
+    if not user_info:
+        return RedirectResponse("/users/login", status_code=302)
+    
+    return templates.TemplateResponse(request=request, name="settings.html", 
+                                    context={"user": user_info.user, "cards": user_info.cards})
+
     
 # ====================================================== AVATAR ENDPOINT ======================================================   
 
-@web_users_router.post('/info/avatar')
+@web_users_router.post('/settings/avatar')
 def change_avatar(request: Request, file: UploadFile = File(...)):
     user = authenticate.get_user_if_token(request)
     if not user:

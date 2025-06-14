@@ -1,9 +1,12 @@
+from data.models import TransactionOut, TransactionCreate, UserFromDB, TransactionFilterParams, UserTransactionsResponse
 from data.database import read_query, insert_query, update_query
-from data.models import TransactionOut, TransactionCreate, UserFromDB, TransactionFilterParams
 from services.users_service import get_user_by_username
 
 
 class TransactionServiceError(Exception):
+    pass
+
+class TransactionServiceInsufficientFunds(TransactionServiceError):
     pass
 
 class TransactionServiceUserNotFound(TransactionServiceError):
@@ -12,7 +15,7 @@ class TransactionServiceUserNotFound(TransactionServiceError):
 class TransactionServiceCurrencyNotFound(TransactionServiceError):
     pass
 
-def get_transactions_for_user(user_id: int) -> list[TransactionOut]:
+def get_transactions_for_user(user_id: int, limit: int | None = None) -> UserTransactionsResponse:
     sql = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
                t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at
@@ -21,8 +24,10 @@ def get_transactions_for_user(user_id: int) -> list[TransactionOut]:
         WHERE t.sender_id = ? OR t.receiver_id = ?
         ORDER BY t.id DESC
     """
+    if limit:
+        sql += " LIMIT 3"
     rows = read_query(sql, (user_id, user_id))
-    return [TransactionOut.from_query(row) for row in rows]
+    return UserTransactionsResponse(transactions=[TransactionOut.from_query(row) for row in rows])
 
 def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
     receiver = get_user_by_username(data.receiver_username)
@@ -34,7 +39,7 @@ def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
         raise TransactionServiceUserNotFound("Receiver not found.")
 
     if sender.balance < data.amount:
-        raise TransactionServiceError("Insufficient funds.")
+        raise TransactionServiceInsufficientFunds("Insufficient funds.")
 
     check_cat = read_query("SELECT id FROM TransactionCategories WHERE id = ? AND user_id = ?",
                            (data.category_id, sender.id))
