@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>New Transaction</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- New Transaction -->
+    <div id="newTransaction" class="page">
+        <h2>Create New Transaction</h2>
+        <form action="/users/transactions/new" method="post">
+            <div class="form-group">
+                <label for="transactionCategory">Category</label>
+                <select id="transactionCategory" required>
+                    <option value="">Select Category</option>
+                    <option value="food">Food & Drink</option>
+                    <option value="transport">Transport</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="transfer">Transfer</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transactionName">Transaction Name</label>
+                <input type="text" id="transactionName" required>
+            </div>
+            <div class="form-group">
+                <label for="transactionDescription">Description</label>
+                <textarea id="transactionDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="receiverName">Receiver Name</label>
+                <input type="text" id="receiverName" required>
+            </div>
+            <div class="form-group">
+                <label for="transactionAmount">Amount</label>
+                <input type="number" id="transactionAmount" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="isRecurring"> Recurring Transaction
+                </label>
+            </div>
+            <div class="form-group" id="recurringOptions" style="display: none;">
+                <label for="recurringInterval">Recurring Interval</label>
+                <select id="recurringInterval">
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                </select>
+                <input type="number" id="recurringValue" placeholder="Enter number" min="1">
+            </div>
+            <button type="submit" class="btn">Create Transaction</button>
+        </form>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

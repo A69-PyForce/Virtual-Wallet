@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Register</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Register Page -->
+    <div id="register" class="page">
+        <h2>Register</h2>
+        <form action="/users/register" method="post">
+            <div class="form-group">
+                <label for="regUsername">Username</label>
+                <input type="text" id="regUsername" required>
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email Address</label>
+                <input type="email" id="regEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="regPhone">Phone Number</label>
+                <input type="tel" id="regPhone" required>
+            </div>
+            <div class="form-group">
+                <label for="regCurrency">Currency</label>
+                <select id="regCurrency" required>
+                    {% for code, name in currencies %}
+                    <option value="{{ code }}" {{ 'selected' if currency_code==code else '' }}>{{ code }} - {{ name
+                        }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn">Register</button>
+        </form>
+        <p style="margin-top: 1rem;">Already have an account?
+            <a href="/users/login">Login here</a>
+        </p>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- User Settings -->
+    <div id="settings" class="page">
+        <h2>User Settings</h2>
+        <div class="user-info">
+            <div class="card">
+                <!--Insert Jinja2 logic here-->
+                <h3>Account Information</h3>
+                <p><strong>Username:</strong> <span id="settingsUsername">john_doe</span></p>
+                <p><strong>Email:</strong> <span id="settingsEmail">john@example.com</span></p>
+                <p><strong>Phone:</strong> <span id="settingsPhone">+1 (555) 123-4567</span></p>
+                <p><strong>Currency:</strong> <span id="settingsCurrency">USD</span></p>
+                <p><strong>Joined:</strong> <span id="settingsJoined">January 15, 2024</span></p>
+
+                <div class="status-badges">
+                    <span class="badge badge-admin">Admin</span>
+                    <span class="badge badge-verified">Verified</span>
+                    <span class="badge badge-active">Active</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <!--Fixes + Jinja2 logic are gonna be needed here-->
+                <h3>Avatar</h3>
+                <div class="file-upload">
+                    <p>Click to upload new avatar</p>
+                    <form action="/users/avatar" method="post" enctype="multipart/form-data">
+                        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                    </form>
+                </div>
+
+                <div id="currentAvatar" style="margin-top: 1rem;">
+                    <img src="https://via.placeholder.com/100x100" alt="Current Avatar"
+                        style="border-radius: 50%; width: 100px; height: 100px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

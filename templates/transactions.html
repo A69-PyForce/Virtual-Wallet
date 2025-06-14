@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Transactions</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Transactions -->
+    <div id="transactions" class="page">
+        <h2>All Transactions</h2>
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <!--Buttons for received / sent transactions, probably some form of filter if user.id != sender.id here or something-->
+            <button class="btn" id="receivedBtn">Received</button>
+            <button class="btn btn-secondary" id="sentBtn">Sent</button>
+        </div>
+
+        <div id="receivedTransactions" class="transaction-list">
+            <h3>Received Transactions</h3>
+            <div class="transaction-item">
+                <!-- Received transaction info with Jinja2 logic here -->
+                <div>
+                    <div><strong>Salary Payment</strong></div>
+                    <div>From: Company Corp</div>
+                    <div>Category: Salary</div>
+                    <div>Created: 2024-01-15 09:00:00</div>
+                    <div style="color: #28a745;">✓ Accepted</div>
+                </div>
+                <div>
+                    <div class="transaction-amount positive">+$2,500.00 USD</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sentTransactions" class="transaction-list" style="display: none;">
+            <h3>Sent Transactions</h3>
+            <div class="transaction-item">
+                <!-- Sent transaction info with Jinja2 logic here -->
+                <div>
+                    <div><strong>Coffee Shop</strong></div>
+                    <div>To: Local Coffee</div>
+                    <div>Category: Food & Drink</div>
+                    <div>Created: 2024-01-15 14:30:00</div>
+                    <div style="color: #28a745;">✓ Accepted</div>
+                </div>
+                <div>
+                    <!-- button for setting up the transaction to be recurring, idk how it gonna work -->
+                    <div class="transaction-amount negative">-$4.50 USD</div>
+                    <form action="users/transactions/{{ transaction.id }}/recurring" method="post">
+                        <button class="btn btn-secondary">Set Recurring</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

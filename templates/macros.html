@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Macros</title>
+</head>
+
+<body>
+    {% macro load_navbar(user = None) %}
+    <div class="header">
+        <div class="container">
+            <h1>Virtual Wallet</h1>
+            <nav class="nav">
+                {% if user %}
+                <form action="/users/dashboard" method="get">
+                    <button class="nav-btn hidden" id="dashboardBtn">Dashboard</button>
+                </form>
+
+                <form action="/users/profile" method="get">
+                    <button class="nav-btn hidden" id="profileBtn">Profile</button>
+                </form>
+
+                <form action="/users/settings" method="get">
+                    <button class="nav-btn hidden" id="settingsBtn">Settings</button>
+                </form>
+
+                <form action="/users/logout" method="post">
+                    <button class="nav-btn hidden" id="logoutBtn">Logout</button>
+                </form>
+                {% else %}
+                <form action="/home" method="get">
+                    <button class="nav-btn active">Home</button>
+                </form>
+
+                <form action="/users/login" method="get">
+                    <button class="nav-btn" id="loginBtn">Login</button>
+                </form>
+
+                <form action="/users/register" method="get">
+                    <button class="nav-btn" id="registerBtn">Register</button>
+                </form>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+    {% endmacro %}
+
+    {% macro load_footer() %}
+    <footer style="text-align: center; margin-top: 2em; margin-bottom: 2em; color:#888;">
+        &copy; 2025 Virtual Wallet &mdash; Built with FastAPI & MariaDB
+    </footer>
+    {% endmacro %}
+</body>
+
+</html>

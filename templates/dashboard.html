@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Dashboard</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="page">
+        <div class="balance-card">
+            <div class="balance-amount" id="balanceAmount">$0.00</div>
+            <div>Account Balance</div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Recent Transactions</h3>
+
+                <!-- Insert Jinja2 logic here -->
+                <div id="recentTransactions">
+                    <div class="transaction-item">
+                        <div>
+                            <div><strong>Coffee Shop</strong></div>
+                            <div style="color: #666; font-size: 0.9rem;">Today, 2:30 PM</div>
+                        </div>
+                        <div class="transaction-amount negative">-$4.50</div>
+                    </div>
+                    <div class="transaction-item">
+                        <div>
+                            <div><strong>Salary Deposit</strong></div>
+                            <div style="color: #666; font-size: 0.9rem;">Yesterday, 9:00 AM</div>
+                        </div>
+                        <div class="transaction-amount positive">+$2,500.00</div>
+                    </div>
+                </div>
+                <form action="/users/transactions" method="get">
+                    <button class="btn" style="margin-top: 1rem;">
+                        View All Transactions
+                    </button>
+                </form>
+
+            </div>
+
+            <div class="card">
+                <h3>Bank Cards</h3>
+                <div id="bankCards">
+
+                    <!-- Insert Jinja2 logic here -->
+                    <div class="bank-card">
+                        <div>DEBIT</div>
+                        <div class="card-number">**** **** **** 1234</div>
+                        <div class="card-info">
+                            <div>John Doe</div>
+                            <div>12/25</div>
+                        </div>
+                    </div>
+                </div>
+                <form action="/users/cards/new" method="get">
+                    <button class="btn" style="margin-top: 1rem;">Add New Card</button>
+                </form>
+
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <form action="/users/transactions/new">
+                <button class="btn" style="margin: 0.5rem;">New Transaction</button>
+            </form>
+
+            <form action="/users/contacts" method="get">
+                <button class="btn btn-secondary" style="margin: 0.5rem;">View Contacts</button>
+            </form>
+
+            <form action="/users/cards" method="get">
+                <button class="btn btn-secondary" style="margin: 0.5rem;">Manage Cards</button>
+            </form>
+
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

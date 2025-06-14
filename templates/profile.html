@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Profile</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- User Profile -->
+    <div id="profile" class="page">
+        <h2>User Profile</h2>
+        <div class="balance-card">
+            <div class="balance-amount" id="profileBalance">$0.00</div>
+            <div>Account Balance</div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Recent Transactions</h3>
+                <div id="profileTransactions">
+                    <!-- Insert Jinja2 logic here-->
+                    <!-- Recent transactions will be populated here -->
+                </div>
+                <form action="users/transactions" method="get">
+                    <button class="btn">View All Transactions</button>
+                </form>
+
+            </div>
+
+            <div class="card">
+                <h3>Bank Cards</h3>
+                <div id="profileCards">
+                    <!-- Insert Jinja2 logic here-->
+                    <!-- Bank cards will be populated here -->
+                </div>
+                <form action="users/cards/new" method="get">
+                    <button class="btn">New Bank Card</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Quick Actions</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <form action="users/contacts" method="get">
+                    <button class="btn">View Contacts</button>
+                </form>
+                <form action="users/transactions" method="get">
+                    <button class="btn">View All Transaction</button>
+                </form>
+                <form action="users/transactions/new" method="get">
+                    <button class="btn">New Transaction</button>
+                </form>
+                <form action="users/cards/new" method="get">
+                    <button class="btn">New Bank Card</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

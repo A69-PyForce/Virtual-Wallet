@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Contacts</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Contacts -->
+    <div id="contacts" class="page">
+        <h2>Contacts</h2>
+        <!--Insert search logic here-->
+        <div class="search-bar">
+            <input type="text" id="contactSearch" placeholder="Search for users to add...">
+            <button class="btn">Search Users</button>
+        </div>
+
+        <div class="card">
+            <h3>Your Contacts</h3>
+            <div id="contactsList">
+                <!-- Insert Jinja2 contacts logic here -->
+                <div class="contact-item">
+                    <div>
+                        <div><strong>Alice Johnson</strong></div>
+                        <div style="color: #666;">alice.johnson@email.com</div>
+                    </div>
+                    <button class="btn btn-danger">Remove</button>
+                </div>
+                <div class="contact-item">
+                    <div>
+                        <div><strong>Bob Smith</strong></div>
+                        <div style="color: #666;">bob.smith@email.com</div>
+                    </div>
+                    <button class="btn btn-danger">Remove</button>
+                </div>
+            </div>
+
+            <div class="pagination">
+                <!-- Insert page pagination logic here -->
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Search Results</h3>
+            <div id="searchResults">
+                <p>Search for users above to add them to your contacts.</p>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>
