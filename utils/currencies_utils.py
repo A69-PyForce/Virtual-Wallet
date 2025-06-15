@@ -7,6 +7,9 @@ import httpx
 import json
 import os
 
+from data.database import read_query
+
+
 # Custom exception for this file
 class CurrenciesUtils(Exception):
     pass
@@ -84,3 +87,19 @@ def dump_all_currencies():
         
 # Call cache func to ensure ALL_CURRENCIES exists
 cache_all_currencies()
+
+def get_currency_code_by_user_id(user_id: int) -> str | None:
+    result = read_query("""
+        SELECT c.code
+        FROM Users u
+        JOIN Currencies c ON u.currency_id = c.id
+        WHERE u.id = ?""", (user_id,))
+    return result[0][0] if result else None
+
+def get_display_transaction(tx, current_user_id):
+    if current_user_id == tx.sender_id:
+        return f"You sent {tx.original_amount:.2f} {tx.original_currency_code} (converted to {tx.amount:.2f} {tx.currency_code})"
+    elif current_user_id == tx.receiver_id:
+        return f"You received {tx.amount:.2f} {tx.currency_code}"
+    else:
+        return ""

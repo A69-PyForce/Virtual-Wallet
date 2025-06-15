@@ -209,7 +209,6 @@ class TransactionCreate(BaseModel):
     description: Annotated[str, StringConstraints(min_length=2, max_length=256)]
     receiver_username: Annotated[str, StringConstraints(min_length=2, max_length=20)]
     amount: float
-    currency_code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
     is_recurring: bool = False
 
 class TransactionOut(BaseModel):
@@ -224,6 +223,8 @@ class TransactionOut(BaseModel):
     is_accepted: bool
     is_recurring: bool
     created_at: datetime
+    original_amount: float | None = None
+    original_currency_code: str | None = None
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -238,7 +239,9 @@ class TransactionOut(BaseModel):
             category_id=row[7],
             is_accepted=bool(row[8]),
             is_recurring=bool(row[9]),
-            created_at=row[10]
+            created_at=row[10],
+            original_amount=row[11],
+            original_currency_code=row[12]
         )
 
 class UserTransactionsResponse(BaseModel):
@@ -247,6 +250,7 @@ class UserTransactionsResponse(BaseModel):
 class IntervalType(str, Enum):
     HOURS = "HOURS"
     DAYS = "DAYS"
+    MINUTES = "MINUTES"
 
 class RecurringCreate(BaseModel):
     transaction_id: int
@@ -325,3 +329,12 @@ class AdminTransactionFilterParams(BaseModel):
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
     offset: int = Field(default=0, ge=0)
+
+class TransactionTemplate(BaseModel):
+    sender_id: int
+    receiver_id: int
+    amount: float
+    currency_id: int
+    category_id: int
+    name: str
+    description: str
