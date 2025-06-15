@@ -19,11 +19,11 @@ def get_user_transactions(u_token: str = Header()):
         return responses.InternalServerError()
 
 @api_transactions_router.post("")
-def create_transaction(transaction_data: TransactionCreate, u_token: str = Header()):
+async def create_transaction(transaction_data: TransactionCreate, u_token: str = Header()):
     sender = authenticate.get_user_or_raise_401(u_token)
 
     try:
-        tx_id = service.create_transaction(transaction_data, sender)
+        tx_id = await service.create_transaction(transaction_data, sender)
         return responses.Created(f"Transaction created with id {tx_id}.")
     except service.TransactionServiceUserNotFound:
         return responses.NotFound("Receiver not found.")
@@ -39,11 +39,11 @@ def create_transaction(transaction_data: TransactionCreate, u_token: str = Heade
         return responses.InternalServerError()
 
 @api_transactions_router.put("/{transaction_id}/confirm")
-def confirm_transaction(transaction_id: int, u_token: str = Header()):
+async def confirm_transaction(transaction_id: int, u_token: str = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
-        is_updated = service.confirm_transaction(transaction_id, user)
+        is_updated = await service.confirm_transaction(transaction_id, user)
         if not is_updated:
             return responses.NotFound("Transaction not found or cannot be confirmed.")
         return responses.OK("Transaction confirmed successfully.")

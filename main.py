@@ -1,3 +1,5 @@
+import asyncio
+
 from common.error_handlers import register_error_handlers
 from utils.currencies_utils import dump_all_currencies
 from recurring_scheduler import process_due_recurring
@@ -42,7 +44,7 @@ register_error_handlers(app)
 if __name__ == "__main__":
     
     # Recurring transactions processor
-    process_due_recurring()
+    asyncio.run(process_due_recurring())
     
     # Uncomment on first startup to cache currencies and also dump them in database
     dump_all_currencies()
