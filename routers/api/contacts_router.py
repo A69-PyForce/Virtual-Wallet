@@ -8,8 +8,13 @@ import services.contacts_service as contacts_service
 
 api_contacts_router = APIRouter(prefix='/api/users/contacts')
 
+@api_contacts_router.get(path="")
+def get_all_contacts_for_user(u_token = Header(), page: int = 1, page_size: int = 10):
+    user = authenticate.get_user_or_raise_401(u_token)
+    return contacts_service.get_all_contacts_for_user(user, page, page_size)
+
 @api_contacts_router.put(path="")
-def add_contact_to_user(contact: ContactInfo, u_token = Header()):
+def add_contact_to_user(contact: ContactModify, u_token = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -32,7 +37,7 @@ def add_contact_to_user(contact: ContactInfo, u_token = Header()):
         return responses.InternalServerError()
     
 @api_contacts_router.delete(path="")
-def remove_contact_from_user(contact: ContactInfo, u_token = Header()):
+def remove_contact_from_user(contact: ContactModify, u_token = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
