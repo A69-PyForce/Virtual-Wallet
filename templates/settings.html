@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Settings</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- User Settings -->
+    <div class="container">
+        <div id="settings" class="page">
+            <h2>User Settings</h2>
+            <div class="user-info">
+                <div class="card">
+                    <!--Insert Jinja2 logic here-->
+                    <h3 style="margin-bottom: 0.5rem;">Account Information</h3>
+                    <p><strong>Username:</strong> <span id="settingsUsername">{{ user.username }}</span></p>
+                    <p><strong>Email:</strong> <span id="settingsEmail">{{ user.email }}</span></p>
+                    <p><strong>Phone:</strong> <span id="settingsPhone">{{ user.phone_number }}</span></p>
+                    <p><strong>Currency:</strong> <span id="settingsCurrency">{{ user.currency_code }}</span></p>
+                    <p><strong>Joined:</strong> <span id="settingsJoined">{{ user.created_at }}</span></p>
+
+                    <div class="status-badges">
+                        {% if user.is_admin %}
+                        <span class="badge badge-admin">Admin</span>
+                        {% endif %}
+
+                        {% if user.is_verified %}
+                        <span class="badge badge-verified">Verified</span>
+                        {% endif %}
+
+                        {% if not user.is_blocked %}
+                        <span class="badge badge-active">Active</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 0.5rem;">Avatar</h3>
+                    <div class="avatar-upload-container">
+                        <div class="avatar-preview">
+                            <img src="{{ user.avatar_url or '/static/images/default_user_avatar.png' }}"
+                                alt="Current Avatar" id="avatarPreview">
+                        </div>
+
+                        <form action="/users/settings/avatar" method="post" enctype="multipart/form-data"
+                            id="avatarForm">
+                            <div class="avatar-upload-btn">
+                                Choose Image
+                                <input type="file" name="file" id="avatarInput" accept="image/*"
+                                    onchange="previewAvatar(event)">
+                            </div>
+                        </form>
+
+                        <div class="avatar-upload-info">
+                            <p>Square image, around 300x300 pixels</p>
+                            <p>Maximum file size: 2MB</p>
+                            <p>Supported formats: JPG, PNG, GIF</p>
+                        </div>
+
+                        <div id="avatarUploadError" class="avatar-upload-error" style="display: none;"></div>
+                        <div id="avatarUploadSuccess" class="avatar-upload-success" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+
+    <script>
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            const errorDiv = document.getElementById('avatarUploadError');
+            const successDiv = document.getElementById('avatarUploadSuccess');
+
+            // Reset messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            // Validate file
+            if (file) {
+                // Check file size (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    errorDiv.textContent = 'File size must be less than 2MB';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    errorDiv.textContent = 'Please select an image file';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+
+                // Submit form
+                const form = document.getElementById('avatarForm');
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        if (response.redirected) {
+                            // If we get a redirect, it means the upload was successful
+                            successDiv.textContent = 'Avatar updated successfully!';
+                            successDiv.style.display = 'block';
+                            // Update navbar avatar after 1 second
+                            setTimeout(() => {
+                                const navbarAvatar = document.querySelector('.user-avatar');
+                                if (navbarAvatar) {
+                                    navbarAvatar.src = document.getElementById('avatarPreview').src;
+                                }
+                            }, 1000);
+                        } else {
+                            throw new Error('Upload failed');
+                        }
+                    })
+                    .catch(error => {
+                        errorDiv.textContent = 'An error occurred while uploading';
+                        errorDiv.style.display = 'block';
+                    });
+            }
+        }
+    </script>
+</body>
+
+</html>

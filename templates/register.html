@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Register</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Register Page -->
+    <div class="container">
+        <div id="register" class="page">
+            <h2 style="margin-bottom: 2rem;">Register</h2>
+            {% if error_message %}
+            <div class="error-message-container">
+                <p class="error-message">{{ error_message }}</p>
+            </div>
+            {% endif %}
+            <form action="/users/register" method="post">
+
+                <div class="form-group">
+                    <label for="username">Username <span class="required">*</span></label>
+                    <input type="text" id="username" name="username" value="{{ username or '' }}" required minlength="3"
+                        maxlength="20" title="Username must contain only letters, numbers, and underscores">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" value="{{ email or '' }}" required minlength="6"
+                        maxlength="40"
+                        title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required minlength="4" maxlength="40"
+                        title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="phone_number" name="phone_number" value="{{ phone_number or '' }}"
+                            placeholder="+359 00 123 4567">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="currency_code">Currency <span class="required">*</span></label>
+                    <select id="currency_code" name="currency_code" required>
+                        <option value="">Select Currency</option>
+                        {% for code, name in currencies %}
+                        <option value="{{ code }}" {{ 'selected' if currency_code==code else '' }}>{{ code }} - {{ name
+                            }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Register</button>
+
+            </form>
+            <p style="margin-top: 1rem;">Already have an account?
+                <a href="/users/login">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+
+    <script>
+        // Phone number formatting for +359 98 879 0900 format
+        const phoneInput = document.getElementById('phone_number');
+        phoneInput.addEventListener('input', function (e) {
+            let value = e.target.value;
+
+            // Remove all non-digit characters except +
+            value = value.replace(/[^\d+]/g, '');
+
+            // Ensure it starts with +
+            if (!value.startsWith('+')) {
+                value = '+' + value.replace(/\+/g, '');
+            }
+
+            // Remove any + that's not at the beginning
+            value = '+' + value.slice(1).replace(/\+/g, '');
+
+            // Apply formatting based on length
+            if (value.length > 1) {
+                let digits = value.slice(1); // Remove the +
+                let formatted = '+';
+
+                if (digits.length <= 3) {
+                    // Country code only: +359
+                    formatted += digits;
+                } else if (digits.length <= 5) {
+                    // Country code + first part: +359 98
+                    formatted += digits.slice(0, 3) + ' ' + digits.slice(3);
+                } else if (digits.length <= 8) {
+                    // Country code + first + second part: +359 98 879
+                    formatted += digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5);
+                } else {
+                    // Full format: +359 98 879 0900
+                    formatted += digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8, 12);
+                }
+
+                value = formatted;
+            }
+
+            e.target.value = value;
+        });
+    </script>
+</body>
+
+</html>

@@ -4,12 +4,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Virtual Wallet</title>
 </head>
 
 <body>
-    <h1 style="text-align: center;">Hello World</h1>
-    <img src="../static/images/index_meme.png" style="max-width: 100%; max-height: 100%; display: block;">
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Home Page -->
+    <div class="container">
+        <div id="home" class="page active">
+            <div class="welcome-section">
+                <h2>Welcome to Virtual Wallet</h2>
+                <p>Your secure digital wallet for managing money, cards, and transactions</p>
+                <form action="/users/register" method="get">
+                    <button class="btn">Get Started</button>
+                </form>
+            </div>
+            <div class="features">
+                <div class="feature">
+                    <h3>💳 Manage Cards</h3>
+                    <p>Add and manage your bank cards securely</p>
+                </div>
+                <div class="feature">
+                    <h3>💸 Send Money</h3>
+                    <p>Send money to contacts instantly</p>
+                </div>
+                <div class="feature">
+                    <h3>📊 Track Transactions</h3>
+                    <p>Monitor all your financial activities</p>
+                </div>
+                <div class="feature">
+                    <h3>👥 Manage Contacts</h3>
+                    <p>Keep track of your payment contacts</p>
+                </div>
+
+                <div class="feature">
+                    <h3>🎨 Customize</h3>
+                    <p>Personalize your profile the way you like it</p>
+                </div>
+
+                <div class="feature">
+                    <h3>💰 No Fees</h3>
+                    <p>All features are entirely free the first 3 months</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
 </body>
 
 </html>

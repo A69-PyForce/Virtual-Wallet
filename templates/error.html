@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Error - Virtual Wallet</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <div class="container">
+        <div class="error-container">
+            <div class="error-content">
+                <div class="error-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h1 class="error-title">{{ error_title | default('Oops! Something went wrong') }}</h1>
+                <p class="error-message">{{ error_message | default('An unexpected error occurred. Please try again
+                    later.') }}</p>
+                {% if error_details %}
+                <div class="error-details">
+                    <p>{{ error_details }}</p>
+                </div>
+                {% endif %}
+                <div class="error-actions">
+                    <a href="javascript:history.back()" class="btn btn-secondary" style="text-decoration: none;">Go
+                        Back</a>
+                    <a href="/" class="btn" style="text-decoration: none;">Go Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

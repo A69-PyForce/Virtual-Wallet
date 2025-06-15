@@ -1,9 +1,11 @@
+import asyncio
 from threading import Timer
 from datetime import datetime, timedelta
 from data.database import read_query, update_query
+from data.models import TransactionTemplate
 from services.transactions_service import create_transaction_from_recurring
 
-def process_due_recurring():
+async def process_due_recurring():
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Checking for due recurring...")
 
     sql = """
@@ -24,7 +26,7 @@ def process_due_recurring():
 
         print(f"Executing recurring ID {recurring_id} (Tx from {sender_id} to {receiver_id})")
 
-        created = create_transaction_from_recurring(
+        template = TransactionTemplate(
             sender_id=sender_id,
             receiver_id=receiver_id,
             amount=amount,
@@ -33,6 +35,8 @@ def process_due_recurring():
             name=name,
             description=description
         )
+
+        created = await create_transaction_from_recurring(template)
 
         if not created:
             print(f"Failed to execute recurring ID {recurring_id}")
@@ -48,6 +52,18 @@ def process_due_recurring():
             continue
 
         # updates the next data
+        now = datetime.now()
+        if interval_type == "DAYS":
+            next_exec_date = now + timedelta(days=interval)
+        elif interval_type == "HOURS":
+            next_exec_date = now + timedelta(hours=interval)
+        elif interval_type == "MINUTES":
+            next_exec_date = now + timedelta(minutes=interval)
+        else:
+            print(f"Invalid interval type: {interval_type}")
+            continue
+
+        # updates the next data
         update_query(
             "UPDATE Recurring SET next_exec_date = ? WHERE id = ?",
             (next_exec_date, recurring_id)
@@ -56,4 +72,4 @@ def process_due_recurring():
         print(f"Recurring ID {recurring_id} executed and scheduled next.")
 
     # resets the timer (checks on every 30 sec)
-    Timer(30.0, process_due_recurring).start()
+    Timer(30.0, lambda: asyncio.create_task(process_due_recurring())).start()
