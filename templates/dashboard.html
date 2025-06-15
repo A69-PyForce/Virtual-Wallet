@@ -36,8 +36,8 @@
                                     Pending</div>
                                 <div style="color: #666; font-size: 0.7rem;">{{ transaction.created_at }}</div>
                             </div>
-                            <div class="transaction-amount pending">-{{ transaction.amount }} {{
-                                transaction.currency_code
+                            <div class="transaction-amount pending">-{{ transaction.original_amount }} {{
+                                transaction.original_currency_code
                                 }}
                             </div>
 
@@ -49,8 +49,8 @@
                                     Sent</div>
                                 <div style="color: #666; font-size: 0.7rem;">{{ transaction.created_at }}</div>
                             </div>
-                            <div class="transaction-amount negative">-{{ transaction.amount }} {{
-                                transaction.currency_code
+                            <div class="transaction-amount negative">-{{ transaction.original_amount }} {{
+                                transaction.original_currency_code
                                 }}
                             </div>
 
