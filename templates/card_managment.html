@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Card Managment</title>
+</head>
+
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <!-- Card Management -->
+    <div class="container">
+        <div id="cardManage" class="page">
+            <h2>Bank Card Management</h2>
+            <div class="card">
+                <h3>Card Operations</h3>
+                <div style="margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label for="cardAmount">Amount</label>
+                        <input type="number" id="cardAmount" step="0.01" placeholder="Enter amount">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <!--Insert logic to withdraw/deposit from /users/cards/{{ card.id }} here-->
+                        <button class="btn btn-success">Deposit</button>
+                        <button class="btn btn-danger">Withdraw</button>
+                    </div>
+                </div>
+
+                <div class="file-upload">
+                    <p>Click to upload Card image</p>
+                    <form action="/users/cards/{{ card.id }}/image" method="post" enctype="multipart/form-data">
+                        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Your Cards</h3>
+                <div id="manageCards">
+                    <!-- Cards will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

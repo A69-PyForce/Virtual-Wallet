@@ -4,48 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/register.css">
-    <title>Virtual Wallet - Register</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+    <title>Register</title>
 </head>
 
 <body>
-    <div class="register-container">
-        <div class="register-header">
-            <h1>Create Account</h1>
-            <p>Join Virtual Wallet today</p>
-        </div>
+    {{ load_navbar(get_user(request)) }}
 
-        {% if error_message %}
-        <div class="error-message">
-            {{ error_message }}
-        </div>
-        {% endif %}
-
-        <form method="POST" action="/users/register">
-            <div class="form-group">
-                <label for="username">Username <span class="required">*</span></label>
-                <input type="text" id="username" name="username" value="{{ username or '' }}" required minlength="3"
-                    maxlength="20" title="Username must contain only letters, numbers, and underscores">
+    <!-- Register Page -->
+    <div class="container">
+        <div id="register" class="page">
+            <h2 style="margin-bottom: 2rem;">Register</h2>
+            {% if error_message %}
+            <div class="error-message-container">
+                <p class="error-message">{{ error_message }}</p>
             </div>
+            {% endif %}
+            <form action="/users/register" method="post">
 
-            <div class="form-group">
-                <label for="email">Email Address <span class="required">*</span></label>
-                <input type="email" id="email" name="email" value="{{ email or '' }}" required minlength="6"
-                    maxlength="40"
-                    title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password <span class="required">*</span></label>
-                <input type="password" id="password" name="password" required minlength="4" maxlength="40"
-                    title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
-            </div>
-
-            <div class="form-row">
                 <div class="form-group">
-                    <label for="phone_number">Phone Number <span class="required">*</span></label>
-                    <input type="tel" id="phone_number" name="phone_number" value="{{ phone_number or '' }}"
-                        placeholder="+359 00 123 4567">
+                    <label for="username">Username <span class="required">*</span></label>
+                    <input type="text" id="username" name="username" value="{{ username or '' }}" required minlength="3"
+                        maxlength="20" title="Username must contain only letters, numbers, and underscores">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" value="{{ email or '' }}" required minlength="6"
+                        maxlength="40"
+                        title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required minlength="4" maxlength="40"
+                        title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone_number">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="phone_number" name="phone_number" value="{{ phone_number or '' }}"
+                            placeholder="+359 00 123 4567">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -58,94 +60,58 @@
                         {% endfor %}
                     </select>
                 </div>
-            </div>
 
-            <button type="submit" class="register-btn">Create Account</button>
-        </form>
+                <button type="submit" class="btn">Register</button>
 
-        <div class="login-link">
-            Already have an account? <a href="/users/login">Sign in here</a>
+            </form>
+            <p style="margin-top: 1rem;">Already have an account?
+                <a href="/users/login">Login here</a>
+            </p>
         </div>
     </div>
 
+    {{ load_footer() }}
+
     <script>
-        // Form validation and user experience enhancements
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.querySelector('form');
-            const inputs = form.querySelectorAll('input, select');
+        // Phone number formatting for +359 98 879 0900 format
+        const phoneInput = document.getElementById('phone_number');
+        phoneInput.addEventListener('input', function (e) {
+            let value = e.target.value;
 
-            // Add floating label effect
-            inputs.forEach(input => {
-                input.addEventListener('focus', function () {
-                    this.parentElement.classList.add('focused');
-                });
+            // Remove all non-digit characters except +
+            value = value.replace(/[^\d+]/g, '');
 
-                input.addEventListener('blur', function () {
-                    if (this.value === '') {
-                        this.parentElement.classList.remove('focused');
-                    }
-                });
+            // Ensure it starts with +
+            if (!value.startsWith('+')) {
+                value = '+' + value.replace(/\+/g, '');
+            }
 
-                // Initialize focused state for pre-filled inputs
-                if (input.value !== '') {
-                    input.parentElement.classList.add('focused');
-                }
-            });
+            // Remove any + that's not at the beginning
+            value = '+' + value.slice(1).replace(/\+/g, '');
 
-            // Phone number formatting for +359 98 879 0900 format
-            const phoneInput = document.getElementById('phone_number');
-            phoneInput.addEventListener('input', function (e) {
-                let value = e.target.value;
+            // Apply formatting based on length
+            if (value.length > 1) {
+                let digits = value.slice(1); // Remove the +
+                let formatted = '+';
 
-                // Remove all non-digit characters except +
-                value = value.replace(/[^\d+]/g, '');
-
-                // Ensure it starts with +
-                if (!value.startsWith('+')) {
-                    value = '+' + value.replace(/\+/g, '');
-                }
-
-                // Remove any + that's not at the beginning
-                value = '+' + value.slice(1).replace(/\+/g, '');
-
-                // Apply formatting based on length
-                if (value.length > 1) {
-                    let digits = value.slice(1); // Remove the +
-                    let formatted = '+';
-
-                    if (digits.length <= 3) {
-                        // Country code only: +359
-                        formatted += digits;
-                    } else if (digits.length <= 5) {
-                        // Country code + first part: +359 98
-                        formatted += digits.slice(0, 3) + ' ' + digits.slice(3);
-                    } else if (digits.length <= 8) {
-                        // Country code + first + second part: +359 98 879
-                        formatted += digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5);
-                    } else {
-                        // Full format: +359 98 879 0900
-                        formatted += digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8, 12);
-                    }
-
-                    value = formatted;
+                if (digits.length <= 3) {
+                    // Country code only: +359
+                    formatted += digits;
+                } else if (digits.length <= 5) {
+                    // Country code + first part: +359 98
+                    formatted += digits.slice(0, 3) + ' ' + digits.slice(3);
+                } else if (digits.length <= 8) {
+                    // Country code + first + second part: +359 98 879
+                    formatted += digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5);
+                } else {
+                    // Full format: +359 98 879 0900
+                    formatted += digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8, 12);
                 }
 
-                e.target.value = value;
-            });
+                value = formatted;
+            }
 
-            // Prevent deletion of the + sign
-            phoneInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Backspace' && this.selectionStart === 1 && this.value.startsWith('+')) {
-                    e.preventDefault();
-                }
-            });
-
-            // Form submission with loading state
-            form.addEventListener('submit', function () {
-                const submitBtn = form.querySelector('.register-btn');
-                submitBtn.innerHTML = 'Creating Account...';
-                submitBtn.disabled = true;
-            });
+            e.target.value = value;
         });
     </script>
 </body>

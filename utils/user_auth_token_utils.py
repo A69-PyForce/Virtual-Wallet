@@ -48,6 +48,9 @@ def decode_u_token(u_token: str) -> dict | None:
     
     except ExpiredSignatureError:
         return None
+    
+    except AttributeError:
+        return None
         
     except Exception:
         print(traceback.format_exc())
