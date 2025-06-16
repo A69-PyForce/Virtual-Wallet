@@ -39,7 +39,7 @@ def get_user_by_username(username: str) -> UserFromDB | None:
     sql = """SELECT id, username, email, phone_number, password_hash, is_admin, is_blocked, is_verified, balance, currency_id, created_at, avatar_url
     FROM Users WHERE username = ?"""
     user_data = read_query(sql=sql, sql_params=(username,))
-    if not user_data: None
+    if not user_data: return None
     
     # Find currency code from currency id in user_data and replace it
     user_data = list(user_data[0])
@@ -143,28 +143,58 @@ def get_user_info(username: str):
         )
     return UserInfo(user=user, cards=cards)
 
-def list_users_with_total_count(username_filter: Optional[str], page: int, page_size: int):
-    offset = (page - 1) * page_size
+def list_users_with_total_count(username: str = None, page: int = 1, page_size: int = 10, current_user_id: int = None):
+    # Base query for counting total users
+    count_sql = "SELECT COUNT(*) FROM Users WHERE 1=1"
+    # Base query for getting users
+    sql = """SELECT id, username, email, avatar_url 
+             FROM Users 
+             WHERE 1=1"""
     
-    # Build filter condition
-    where_clause = " WHERE is_blocked = 0 AND is_verified = 1"
-    sql_params = []
+    params = []
     
-    if username_filter:
-        where_clause = " AND username LIKE ?"
-        sql_params.append(f"%{username_filter}%")
+    # Add username filter if provided
+    if username:
+        count_sql += " AND username LIKE ?"
+        sql += " AND username LIKE ?"
+        params.append(f"%{username}%")
     
-    # Build the main SQL query for paged users data
-    users_sql = "SELECT id, username, avatar_url FROM Users" + where_clause + " ORDER BY username LIMIT ? OFFSET ?"
+    # Exclude current user if provided
+    if current_user_id:
+        count_sql += " AND id != ?"
+        sql += " AND id != ?"
+        params.append(current_user_id)
+        
+        # Exclude existing contacts
+        count_sql += """ AND id NOT IN (
+            SELECT contact_id FROM UserContacts WHERE user_id = ?
+        )"""
+        sql += """ AND id NOT IN (
+            SELECT contact_id FROM UserContacts WHERE user_id = ?
+        )"""
+        params.append(current_user_id)
     
-    # Append pagination parameters
-    sql_params.extend([page_size, offset])
+    # Get total count
+    total_count = read_query(sql=count_sql, sql_params=tuple(params))[0][0]
     
-    # Exec the users query
-    users_list = read_query(sql=users_sql, sql_params=tuple(sql_params))
+    # Add pagination
+    sql += " ORDER BY username LIMIT ? OFFSET ?"
+    params.extend([page_size, (page - 1) * page_size])
     
-    # Return the list with user info
-    return [UserListInfo(id=user[0], username=user[1], avatar_url=user[2]) for user in users_list]
+    # Get paginated users
+    users_data = read_query(sql=sql, sql_params=tuple(params))
+    users_list = []
+    for row in users_data:
+        users_list.append(UserListInfo(id=row[0], username=row[1], email=row[2], avatar_url=row[3]))
+    
+    return UsersPaginationList(
+        users=users_list,
+        total_count=total_count,
+        total_pages=(total_count + page_size - 1) // page_size,
+        current_page=page,
+        page=page,
+        page_size=page_size
+    )
 
 def change_user_avatar_url(user: UserFromDB, avatar_url: UserAvatarURL):
     

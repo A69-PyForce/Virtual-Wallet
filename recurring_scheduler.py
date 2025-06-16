@@ -42,6 +42,15 @@ async def process_due_recurring():
             print(f"Failed to execute recurring ID {recurring_id}")
             continue
 
+        now = datetime.now()
+        if interval_type == "DAYS":
+            next_exec_date = now + timedelta(days=interval)
+        elif interval_type == "HOURS":
+            next_exec_date = now + timedelta(hours=interval)
+        else:
+            print(f"Invalid interval type: {interval_type}")
+            continue
+
         # updates the next data
         now = datetime.now()
         if interval_type == "DAYS":

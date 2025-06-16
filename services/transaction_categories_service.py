@@ -9,6 +9,17 @@ def get_all_categories_for_user(user_id: int) -> list[TransactionCategoryOut]:
     rows = read_query(sql, (user_id,))
     return [TransactionCategoryOut.from_query(row) for row in rows]
 
+def get_category_by_id_for_user(category_id: int, user_id: int) -> TransactionCategoryOut | None:
+    sql = """
+        SELECT id, name, image_url
+          FROM TransactionCategories
+         WHERE id = ? AND user_id = ?
+    """
+    rows = read_query(sql, (category_id, user_id))
+    if not rows:
+        return None
+    return TransactionCategoryOut.from_query(rows[0])
+
 
 def create_category_for_user(category: TransactionCategoryCreate, user_id: int):
     sql = """

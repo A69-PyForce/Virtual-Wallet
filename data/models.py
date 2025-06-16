@@ -1,6 +1,6 @@
 from pydantic import BaseModel, StringConstraints, field_validator, Field
 from utils.currencies_utils import ALL_CURRENCIES
-from typing import Annotated, Optional, Literal
+from typing import Annotated, Optional, Literal, List
 from datetime import datetime, date
 from enum import Enum
 import phonenumbers
@@ -148,7 +148,10 @@ class UserListInfo(BaseModel):
 
 # Used in get_all_users endpoint in users router to return all users
 class UsersPaginationList(BaseModel):
-    users: list[UserListInfo]
+    users: List[UserListInfo]
+    total_count: int
+    total_pages: int
+    current_page: int
     page: int
     page_size: int
 
@@ -158,8 +161,22 @@ class UserInfo(BaseModel):
     cards: list[BankCardSummary]
 
 # Used in contacts router for adding/removing a contact
-class ContactInfo(BaseModel):
+class ContactModify(BaseModel):
     username: str
+
+# Used in contacts service/router for returning a list of Contacts with pagination
+class ContactInfo(BaseModel):
+    id: int
+    username: str
+    email: str
+    avatar_url : str | None
+class ListContacts(BaseModel):
+    contacts: List[ContactInfo]
+    total_count: int
+    total_pages: int
+    current_page: int
+    page: int
+    page_size: int
 
 # Used in users router for changing avatar url
 class UserAvatarURL(BaseModel):
@@ -208,6 +225,9 @@ class TransactionOut(BaseModel):
     created_at: datetime
     original_amount: float | None = None
     original_currency_code: str | None = None
+    category_name: str | None = None
+    receiver_name: str | None = None
+
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -224,8 +244,9 @@ class TransactionOut(BaseModel):
             is_recurring=bool(row[9]),
             created_at=row[10],
             original_amount=row[11],
-            original_currency_code=row[12]
-        )
+            original_currency_code=row[12],
+            category_name=row[13],
+            receiver_name=row[14])
 
 class UserTransactionsResponse(BaseModel):
     transactions: list[TransactionOut]
@@ -274,6 +295,7 @@ class TransactionFilterParams(BaseModel):
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
     offset: int = Field(default=0, ge=0)
+    status: Optional[Literal["pending", "confirmed", "declined"]] = None
 
 class UserSummary(BaseModel):
     id: int

@@ -9,26 +9,9 @@ from utils.user_auth_token_utils import *
 api_users_router = APIRouter(prefix='/api/users')
 
 @api_users_router.get(path="")
-def get_all_users(username: Optional[str] = Query(
-    None, description="Filter by username, partial matches are allowed."),
-    page: int = Query(default=1, ge=1, description="Page number (starting from 1)."),
-    page_size: int = Query(default=5, ge=1, le=100, description="Number of users per page."),
-    u_token: str = Header()  
-):
+def get_all_users(username: str = None, page: int = 1, page_size: int = 10, u_token = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
-    
-    try:
-        
-        # Call service layer and get both the list and the total count
-        users = users_service.list_users_with_total_count(
-            username_filter=username, page=page, page_size=page_size
-        )
-        # Respond with the users and pagination details
-        return UsersPaginationList(users=users, page=page, page_size=page_size)
-        
-    except:
-        print(traceback.format_exc())
-        return responses.InternalServerError()
+    return users_service.list_users_with_total_count(username=username, page=page, page_size=page_size, current_user_id=user.id)
 
 @api_users_router.post(path="/register")
 def user_register(register_info: UserRegisterInfo):

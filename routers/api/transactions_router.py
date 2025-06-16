@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, Header, Depends
 from common import authenticate, responses
 import services.transactions_service as service
@@ -9,13 +10,13 @@ class TransactionServiceInsufficientFunds(service.TransactionServiceError):
     pass
 
 @api_transactions_router.get("", response_model=UserTransactionsResponse)
-def get_user_transactions(u_token: str = Header()):
+def get_user_transactions(limit: int | None = None, u_token: str = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
-        return service.get_transactions_for_user(user.id)
-    except Exception as e:
-        print(e)
+        return service.get_transactions_for_user(user.id, limit)
+    except Exception:
+        print(traceback.format_exc())
         return responses.InternalServerError()
 
 @api_transactions_router.post("")
@@ -34,8 +35,8 @@ async def create_transaction(transaction_data: TransactionCreate, u_token: str =
     except service.TransactionServiceError:
         return responses.BadRequest("An issue occured while creating this transaction.")
 
-    except Exception as e:
-        print(e)
+    except Exception:
+        print(traceback.format_exc())
         return responses.InternalServerError()
 
 @api_transactions_router.put("/{transaction_id}/confirm")
@@ -47,21 +48,21 @@ async def confirm_transaction(transaction_id: int, u_token: str = Header()):
         if not is_updated:
             return responses.NotFound("Transaction not found or cannot be confirmed.")
         return responses.OK("Transaction confirmed successfully.")
-    except Exception as e:
-        print(e)
+    except Exception:
+        print(traceback.format_exc())
         return responses.InternalServerError()
 
 @api_transactions_router.put("/{transaction_id}/decline")
-def decline_transaction(transaction_id: int, u_token: str = Header()):
+async def decline_tran(transaction_id: int, u_token: str = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
-        is_deleted = service.decline_transaction(transaction_id, user)
+        is_deleted = await service.decline_transaction(transaction_id, user)
         if not is_deleted:
             return responses.NotFound("Transaction not found or cannot be declined.")
         return responses.OK("Transaction declined successfully.")
-    except Exception as e:
-        print(e)
+    except Exception:
+        print(traceback.format_exc())
         return responses.InternalServerError()
 
 @api_transactions_router.get("/history", response_model=list[TransactionOut])
@@ -74,6 +75,6 @@ def get_transaction_history(
 
     try:
         return service.get_user_transaction_history(user, filters)
-    except Exception as e:
-        print(e)
+    except Exception:
+        print(traceback.format_exc())
         return responses.InternalServerError()

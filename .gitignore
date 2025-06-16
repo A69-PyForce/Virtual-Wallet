@@ -175,3 +175,11 @@ cython_debug/
 
 # Currency cache file
 currencies_cache.json
+/.idea/.gitignore
+/.idea/dataSources.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/Virtual-Wallet.iml

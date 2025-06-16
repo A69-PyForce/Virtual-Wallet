@@ -24,15 +24,20 @@ def get_transactions_for_user(user_id: int, limit: int | None = None) -> UserTra
     sql = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
                t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, 
-               t.original_amount, t.original_currency_code
+               t.original_amount, t.original_currency_code, tc.name AS category_name, u.username AS receiver_username
         FROM Transactions AS t
+        JOIN TransactionCategories AS tc ON t.category_id = tc.id
+        JOIN Users AS u ON t.receiver_id = u.id
         JOIN Currencies AS c ON t.currency_id = c.id
         WHERE t.sender_id = ? OR t.receiver_id = ?
         ORDER BY t.id DESC
     """
+    sql_params = [user_id, user_id]
     if limit:
-        sql += " LIMIT 3"
-    rows = read_query(sql, (user_id, user_id))
+        sql += " LIMIT ?"
+        sql_params.append(limit)
+        
+    rows = read_query(sql=sql, sql_params=sql_params)
     return UserTransactionsResponse(transactions=[TransactionOut.from_query(row) for row in rows])
 
 async def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
@@ -136,7 +141,7 @@ async def confirm_transaction(transaction_id: int, user: UserFromDB) -> bool:
         (final_amount, receiver_id))
 
 
-def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
+async def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
     sql = """SELECT amount, sender_id, receiver_id, is_accepted FROM Transactions WHERE id = ?"""
 
     result = read_query(sql, (transaction_id,))
@@ -163,9 +168,11 @@ def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
 def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterParams) -> list[TransactionOut]:
     query = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
-               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, 
-               t.original_amount, t.original_currency_code
+               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, t.original_amount,
+               t.original_currency_code, tc.name AS category_name, u.username AS receiver_username
         FROM Transactions t
+        JOIN TransactionCategories tc ON t.category_id = tc.id
+        JOIN Users AS u ON t.receiver_id = u.id
         JOIN Currencies c ON t.currency_id = c.id
         WHERE (t.sender_id = ? OR t.receiver_id = ?)
     """
@@ -176,24 +183,45 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     if filters.end_date and isinstance(filters.end_date, str):
         filters.end_date = datetime.strptime(filters.end_date, '%Y-%m-%d').date()
 
+    #date filters
     if filters.start_date:
         query += " AND DATE(t.created_at) >= ?"
         params.append(filters.start_date)
     if filters.end_date:
         query += " AND DATE(t.created_at) <= ?"
         params.append(filters.end_date)
+    # direction filter
     if filters.direction == "incoming":
         query += " AND t.receiver_id = ?"
         params.append(user.id)
     elif filters.direction == "outgoing":
         query += " AND t.sender_id = ?"
         params.append(user.id)
+    # category filter
     if filters.category_id:
         query += " AND t.category_id = ?"
         params.append(filters.category_id)
+    # Status filter
+    if filters.status:
+        if filters.status == "pending":
+            query += " AND t.is_accepted = 0"
+        elif filters.status == "confirmed":
+            query += " AND t.is_accepted = 1"
+        elif filters.status == "declined":
+            query += " AND t.is_accepted = -1"
 
-    sort_column = "t.id" if filters.sort_by == "date" else "t.amount"
-    query += f" ORDER BY {sort_column} {filters.sort_order.upper()}"
+    # Default values for pagination
+    filters.limit = filters.limit or 30
+    filters.offset = filters.offset or 0
+
+    # Sorting (safe against SQL injection)
+    if filters.sort_by not in ("date", "amount"):
+        sort_column = "t.created_at"
+    else:
+        sort_column = "t.created_at" if filters.sort_by == "date" else "t.amount"
+    sort_order = filters.sort_order.upper() if (filters.sort_order and filters.sort_order.upper()
+                                                in ("ASC", "DESC")) else "DESC"
+    query += f" ORDER BY {sort_column} {sort_order}"
 
     query += " LIMIT ? OFFSET ?"
     params += [filters.limit, filters.offset]

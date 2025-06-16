@@ -164,7 +164,7 @@ def serve_dashboard(request: Request):
 def serve_settings(request: Request):
     user = authenticate.get_user_if_token(request)
     if not user:
-        return RedirectResponse("/users/settings", status_code=302)
+        return RedirectResponse("/users/login", status_code=302)
     
     user_info = users_service.get_user_info(user.username)
     if not user_info:
@@ -206,14 +206,14 @@ def change_avatar(request: Request, file: UploadFile = File(...)):
             
             # Set avatar url in DB and redirect to same page to refresh
             users_service.change_user_avatar_url(user, avatar)
-            return RedirectResponse("/users/info", status_code=302)
+            return RedirectResponse("/users/settings", status_code=302)
         
         except:
             print(traceback.format_exc())
             pass
     
     # Call to same page to refresh
-    return RedirectResponse("/users/info", status_code=302)
+    return RedirectResponse("/users/settings", status_code=302)
     
 # ====================================================== LOGOUT ENDPOINT ======================================================
 @web_users_router.get('/logout')
