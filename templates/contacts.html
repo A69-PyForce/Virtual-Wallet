@@ -184,6 +184,14 @@
                 <button class="btn btn-primary" onclick="searchUsers()">Search Users</button>
             </div>
 
+            <div class="card hidden" id="searchCard">
+                <h3>Search Results</h3>
+                <div id="searchResults" class="search-results">
+                    <p>Search for users above to add them to your contacts.</p>
+                </div>
+                <div id="searchPagination" class="search-pagination"></div>
+            </div>
+
             <div class="card">
                 <h3>Your Contacts</h3>
                 <div class="contacts-stats">
@@ -240,14 +248,6 @@
                 </div>
                 {% endif %}
             </div>
-
-            <div class="card">
-                <h3>Search Results</h3>
-                <div id="searchResults" class="search-results">
-                    <p>Search for users above to add them to your contacts.</p>
-                </div>
-                <div id="searchPagination" class="search-pagination"></div>
-            </div>
         </div>
     </div>
 
@@ -276,6 +276,8 @@
                 .then(data => {
                     const searchResults = document.getElementById('searchResults');
                     const searchPagination = document.getElementById('searchPagination');
+
+                    document.getElementById("searchCard").className = "card";
 
                     if (data.users && data.users.length > 0) {
                         let html = '';
