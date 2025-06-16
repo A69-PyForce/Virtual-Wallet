@@ -16,7 +16,7 @@ def list_categories(request: Request):
         return RedirectResponse(url="/users/login", status_code=302)
     categories = get_all_categories_for_user(user.id)
     return templates.TemplateResponse(
-        "category_form.html",
+        "categories.html",
         {"request": request, "user": user, "categories": categories}
     )
 
@@ -26,7 +26,7 @@ def new_category(request: Request):
     if not user:
         return RedirectResponse("/users/login", status_code=302)
     return templates.TemplateResponse(
-        "category_form.html",
+        "new_category.html",
         {"request": request, "user": user,"category": None}
     )
 @web_transactions_categories_router.post('/new')
@@ -58,7 +58,7 @@ def edit_category(request: Request, category_id: int):
     if not cat:
         raise HTTPException(404, "Category not found")
     return templates.TemplateResponse(
-        "category_form.html",
+        "new_category.html",
         {"request": request, "user": user, "category": cat}
     )
 

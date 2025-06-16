@@ -16,6 +16,18 @@
     <div class="container">
         <div id="newTransaction" class="page">
             <h2>Create New Transaction</h2>
+
+            {% if error %}
+                <div class="error-message" style="margin-bottom: 1rem; color: #c82333; background: #fee2e2; border-radius: 5px; padding: 1em;">
+                    {{ error }}
+                </div>
+            {% endif %}
+            {% if success %}
+                <div class="success-message" style="margin-bottom: 1rem; color: #38c172; background: #e6ffed; border-radius: 5px; padding: 1em;">
+                    {{ success }}
+                </div>
+            {% endif %}
+
             <form action="/users/transactions/new" method="post" class="form">
 
                 <div class="form-group">
@@ -27,7 +39,9 @@
                                     <option value="{{ category.id }}">{{ category.name }}</option>
                                 {% endfor %}
                             </select>
-                            <a href="/users/categories/new" class="btn btn-success" style="margin-left: 1rem;">+ Add Category</a>
+                            <a href="/categories/new"
+                               class="btn btn-success btn-sm"
+                               style="margin-left: 0.5rem; padding: 0.3em 1em; min-width: unset;">Add New Category</a>
                         </div>
                 </div>
 
@@ -51,16 +65,11 @@
                     <input type="number" id="transactionAmount" name="amount" step="0.01" required>
                 </div>
 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="isRecurring" name="is_recurring"> Recurring Transaction
-                    </label>
-                </div>
-
                 <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
                     <input type="checkbox" id="is_recurring" name="is_recurring" style="width:auto;" onchange="toggleRecurringOptions()">
                     <label for="is_recurring" style="margin:0;">Recurring Transaction</label>
                 </div>
+
 
                 <div class="form-group" id="recurringOptions" style="display: none;">
                     <label for="recurring_interval">Interval</label>
@@ -74,6 +83,11 @@
                     </select>
                 </div>
 
+                <div class="form-group" id="recurringStart" style="display: none;">
+                    <label for="recurring_start">Start Date & Time</label>
+                    <input type="datetime-local" id="recurring_start" name="recurring_start">
+                </div>
+
                 <button type="submit" class="btn">Create Transaction</button>
             </form>
         </div>
@@ -83,10 +97,39 @@
 
     <script>
     function toggleRecurringOptions() {
-        var recurringCheckbox = document.getElementById("is_recurring");
-        var recurringOptions = document.getElementById("recurringOptions");
-        recurringOptions.style.display = recurringCheckbox.checked ? "block" : "none";
+        // Grab the recurring checkbox and related fields
+        const recurringCheckbox   = document.getElementById("is_recurring");
+        const recurringOptions    = document.getElementById("recurringOptions");
+        const recurringStartBlock = document.getElementById("recurringStart");
+
+        // Grab each input/select inside the recurring block
+        const intervalInput       = document.getElementById("recurring_interval");
+        const typeSelect          = document.getElementById("recurring_type");
+        const startInput          = document.getElementById("recurring_start");
+
+        // Determine whether to show or hide
+        const show = recurringCheckbox.checked;
+
+        // Show or hide the recurring options container
+        recurringOptions.style.display    = show ? "block" : "none";
+        if (recurringStartBlock) {
+            recurringStartBlock.style.display = show ? "block" : "none";
+        }
+
+        // Enable the fields when visible, disable them when hidden
+        intervalInput.disabled = !show;
+        typeSelect   .disabled = !show;
+        if (startInput) {
+            startInput.disabled = !show;
+        }
     }
+
+    // Run once on page load to set the correct initial state
+    document.addEventListener("DOMContentLoaded", toggleRecurringOptions);
+
+    // Also run whenever the checkbox is clicked
+    document.getElementById("is_recurring")
+            .addEventListener("change", toggleRecurringOptions);
     </script>
 </body>
 

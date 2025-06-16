@@ -1,35 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container page">
-    <h2 class="mb-3">New Recurring Transaction</h2>
+    <h2 class="mb-3">Make Transaction Recurring</h2>
     <form method="post" class="form">
+        <input type="hidden" name="transaction_id" value="{{ transaction_id }}">
         <div class="form-group">
-            <label>Amount</label>
-            <input type="number" step="0.01" name="amount" required>
+            <label for="interval">Interval</label>
+            <input type="number" name="interval" id="interval" value="30" min="1" required>
         </div>
         <div class="form-group">
-            <label>Currency</label>
-            <input type="text" name="currency" value="USD" required>
-        </div>
-        <div class="form-group">
-            <label>Recurrence Type</label>
-            <select name="recurrence_type">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
+            <label for="interval_type">Interval Type</label>
+            <select name="interval_type" id="interval_type">
+                <option value="DAYS">Days</option>
+                <option value="HOURS">Hours</option>
             </select>
         </div>
         <div class="form-group">
-            <label>Start Date</label>
-            <input type="date" name="start_date" required>
-        </div>
-        <div class="form-group">
-            <label>End Date</label>
-            <input type="date" name="end_date">
-        </div>
-        <div class="form-group">
-            <label>Description</label>
-            <textarea name="description" rows="3"></textarea>
+            <label for="next_exec_date">First execution date</label>
+            <input type="datetime-local" name="next_exec_date" id="next_exec_date" required>
         </div>
         <button type="submit" class="btn btn-success">Create</button>
     </form>

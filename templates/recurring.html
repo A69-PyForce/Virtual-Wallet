@@ -2,7 +2,10 @@
 {% block content %}
 <div class="container page">
     <h2 class="mb-3">Recurring Transactions</h2>
-    <a href="/recurring/new" class="btn btn-success">+ New Recurring</a>
+
+    <a href="/recurring/new?transaction_id={{ tx.id }}" class="btn btn-secondary btn-sm">
+    Set Recurring
+    </a>
 
     {% for r in recurring %}
     <div class="card">

@@ -225,6 +225,9 @@ class TransactionOut(BaseModel):
     created_at: datetime
     original_amount: float | None = None
     original_currency_code: str | None = None
+    category_name: str | None = None
+    receiver_name: str | None = None
+
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -241,8 +244,9 @@ class TransactionOut(BaseModel):
             is_recurring=bool(row[9]),
             created_at=row[10],
             original_amount=row[11],
-            original_currency_code=row[12]
-        )
+            original_currency_code=row[12],
+            category_name=row[13],
+            receiver_name=row[14])
 
 class UserTransactionsResponse(BaseModel):
     transactions: list[TransactionOut]
@@ -291,6 +295,7 @@ class TransactionFilterParams(BaseModel):
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
     offset: int = Field(default=0, ge=0)
+    status: Optional[Literal["pending", "confirmed", "declined"]] = None
 
 class UserSummary(BaseModel):
     id: int

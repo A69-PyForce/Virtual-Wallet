@@ -2,67 +2,225 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    {% from 'macros.html' import load_navbar, load_footer %}
-    <title>Transactions</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="/static/css/styles.css" />
+
+  <!-- Flatpickr CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+  />
+
+  {% from 'macros.html' import load_navbar, load_footer %}
+
+  <title>All Transactions</title>
+
+  <!-- Custom CSS style -->
+  <style>
+    /* hide native spinner & calendar icon */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-clear-button {
+      display: none;
+      -webkit-appearance: none;
+    }
+
+    /* give date inputs a smooth, rounded look */
+    input[type="date"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 0.375rem;
+      background-color: #fff;
+      font-size: 1rem;
+      line-height: 1.5;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="date"]:focus {
+      border-color: #666;
+      box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.075),
+        0 0 0 0.2rem rgba(100, 100, 100, 0.25);
+      outline: none;
+    }
+  </style>
 </head>
 
 <body>
-    {{ load_navbar(get_user(request)) }}
+  {{ load_navbar(get_user(request)) }}
 
-    <!-- Transactions -->
-    <div class="container">
-        <div id="transactions" class="page">
-            <h2>All Transactions</h2>
-            <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                <!--Buttons for received / sent transactions, probably some form of filter if user.id != sender.id here or something-->
-                <button class="btn" id="receivedBtn">Received</button>
-                <button class="btn btn-secondary" id="sentBtn">Sent</button>
+  <div class="container my-5">
+    <div class="row">
+
+      <!-- FILTER SIDEBAR -->
+      <aside class="col-lg-3 mb-4">
+        <div class="card p-3 h-100">
+          <h5 class="card-title">🔍 Filters</h5>
+          <form method="get" action="/users/transactions/history" id="filterForm">
+            <div class="mb-3">
+              <label for="status" class="form-label">Status</label>
+              <select id="status" name="status" class="form-select">
+                <option value="">All</option>
+                <option value="pending"   {% if status == "pending"   %}selected{% endif %}>Pending</option>
+                <option value="confirmed" {% if status == "confirmed" %}selected{% endif %}>Confirmed</option>
+                <option value="declined"  {% if status == "declined"  %}selected{% endif %}>Declined</option>
+              </select>
             </div>
 
-            <div id="receivedTransactions" class="transaction-list">
-                <h3>Received Transactions</h3>
-                <div class="transaction-item">
-                    <!-- Received transaction info with Jinja2 logic here -->
-                    <div>
-                        <div><strong>Salary Payment</strong></div>
-                        <div>From: Company Corp</div>
-                        <div>Category: Salary</div>
-                        <div>Created: 2024-01-15 09:00:00</div>
-                        <div style="color: #28a745;">✓ Accepted</div>
-                    </div>
-                    <div>
-                        <div class="transaction-amount positive">+$2,500.00 USD</div>
-                    </div>
-                </div>
+            <div class="mb-3">
+              <label for="direction" class="form-label">Direction</label>
+              <select id="direction" name="direction" class="form-select">
+                <option value="">All</option>
+                <option value="incoming" {% if direction == "incoming" %}selected{% endif %}>Incoming</option>
+                <option value="outgoing" {% if direction == "outgoing" %}selected{% endif %}>Outgoing</option>
+              </select>
             </div>
 
-            <div id="sentTransactions" class="transaction-list" style="display: none;">
-                <h3>Sent Transactions</h3>
-                <div class="transaction-item">
-                    <!-- Sent transaction info with Jinja2 logic here -->
-                    <div>
-                        <div><strong>Coffee Shop</strong></div>
-                        <div>To: Local Coffee</div>
-                        <div>Category: Food & Drink</div>
-                        <div>Created: 2024-01-15 14:30:00</div>
-                        <div style="color: #28a745;">✓ Accepted</div>
-                    </div>
-                    <div>
-                        <!-- button for setting up the transaction to be recurring, idk how it gonna work -->
-                        <div class="transaction-amount negative">-$4.50 USD</div>
-                        <form action="users/transactions/{{ transaction.id }}/recurring" method="post">
-                            <button class="btn btn-secondary">Set Recurring</button>
-                        </form>
-                    </div>
-                </div>
+            <div class="row gx-2 mb-3">
+              <div class="col">
+                <label for="start_date" class="form-label">From</label>
+                <input
+                  type="date"
+                  id="start_date"
+                  name="start_date"
+                  value="{{ start_date }}"
+                  class="form-control"
+                />
+              </div>
+              <div class="col">
+                <label for="end_date" class="form-label">To</label>
+                <input
+                  type="date"
+                  id="end_date"
+                  name="end_date"
+                  value="{{ end_date }}"
+                  class="form-control"
+                />
+              </div>
             </div>
+
+            <div class="mb-3">
+              <label for="sort_by" class="form-label">Sort by</label>
+              <select id="sort_by" name="sort_by" class="form-select">
+                <option value="date"   {% if sort_by == "date"   %}selected{% endif %}>Date</option>
+                <option value="amount" {% if sort_by == "amount" %}selected{% endif %}>Amount</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="sort_order" class="form-label">Order</label>
+              <select id="sort_order" name="sort_order" class="form-select">
+                <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Descending</option>
+                <option value="asc"  {% if sort_order == "asc"  %}selected{% endif %}>Ascending</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-2">🔎 Filter</button>
+            <a href="/users/transactions/history" class="btn btn-outline-secondary w-100">
+              Clear
+            </a>
+          </form>
         </div>
-    </div>
+      </aside>
 
-    {{ load_footer() }}
+      <!-- TRANSACTION LIST -->
+      <section class="col-lg-9">
+        <h2 class="mb-4">All Transactions</h2>
+
+        {% if transactions %}
+          {% for tx in transactions %}
+            <div class="card mb-3 p-3 d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ tx.name }}</strong><br />
+                {% if user.id == tx.receiver_id %}
+                  <small>From: {{ tx.sender_name or '-' }}</small><br />
+                {% else %}
+                  <small>To: {{ tx.receiver_name or '-' }}</small><br />
+                {% endif %}
+                <small>Category: {{ tx.category_name or '-' }}</small><br />
+                <small>Created: {{ tx.created_at }}</small><br />
+                <small>
+                  {% if tx.is_accepted == 1 %}
+                    <span class="text-success">✓ Accepted</span>
+                  {% elif tx.is_accepted == 0 %}
+                    <span class="text-warning">⏳ Pending</span>
+                  {% else %}
+                    <span class="text-danger">✗ Declined</span>
+                  {% endif %}
+                </small>
+              </div>
+
+              <div class="text-end">
+                {% if user.id == tx.receiver_id %}
+                  <div class="transaction-amount positive">
+                    +{{ "%.2f"|format(tx.amount) }} {{ tx.currency_code }}
+                  </div>
+                {% else %}
+                  <div class="transaction-amount negative">
+                    -{{ "%.2f"|format(tx.original_amount) }} {{ tx.original_currency_code }}
+                  </div>
+                {% endif %}
+
+                <div class="mt-2">
+                  {% if not tx.is_recurring %}
+                    <span class="text-success">1️⃣ One Time</span>
+                  {% else %}
+                    <span class="text-success">🔁 Recurring</span>
+                  {% endif %}
+                </div>
+
+                {% if tx.is_accepted == 0 and user.id == tx.receiver_id %}
+                  <div class="mt-1">
+                    <form
+                      action="/users/transactions/{{ tx.id }}/confirm"
+                      method="post"
+                      class="d-inline"
+                    >
+                      <button class="btn btn-success btn-sm">Confirm</button>
+                    </form>
+                    <form
+                      action="/users/transactions/{{ tx.id }}/decline"
+                      method="post"
+                      class="d-inline"
+                    >
+                      <button class="btn btn-danger btn-sm">Decline</button>
+                    </form>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-center text-muted">No transactions found.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+
+  {{ load_footer() }}
+
+  <!-- Flatpickr JS (at end of body) -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    // initialize flatpickr on both date inputs
+    document.addEventListener("DOMContentLoaded", () => {
+      flatpickr("#start_date", {
+        dateFormat: "Y-m-d",
+        allowInput: true
+      });
+      flatpickr("#end_date", {
+        dateFormat: "Y-m-d",
+        allowInput: true
+      });
+    });
+  </script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 import asyncio
 
 from common.error_handlers import register_error_handlers
+from routers.web.recurring_router import web_recurring_router
 from routers.web.transaction_categories_router import web_transactions_categories_router
 from routers.web.transactions_router import web_transactions_router
 from utils.currencies_utils import dump_all_currencies
@@ -42,6 +43,8 @@ app.include_router(web_users_router, tags=["WEB", "Users"])
 app.include_router(web_contacts_router, tags=["WEB", "Contacts"])
 app.include_router(web_transactions_router, tags=["WEB", "Transactions"])
 app.include_router(web_transactions_categories_router, tags=["WEB", "Transaction Categories"])
+app.include_router(web_recurring_router, tags=["WEB", "Recurring Transaction"])
+
 
 # Error handlers
 register_error_handlers(app)

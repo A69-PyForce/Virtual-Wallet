@@ -16,7 +16,7 @@
     <div class="container">
         <div id="dashboard" class="page">
             <div class="balance-card">
-                <div class="balance-amount" id="balanceAmount">{{ user.balance }} {{ user.currency_code }}</div>
+                <div class="balance-amount" id="balanceAmount">{{ "%.2f"|format(user.balance) }} {{ user.currency_code }}</div>
                 <div>Account Balance</div>
             </div>
 
@@ -87,7 +87,7 @@
                         {% endif %}
 
                     </div>
-                    <form action="/users/transactions" method="get"
+                    <form action="/users/transactions/history" method="get"
                         style="position: absolute; bottom: 1rem; left: 0; right: 0; padding: 0 1rem; display: flex; justify-content: center;">
                         <button class="btn" style="width: 50%;">
                             📃 View All Transactions
@@ -137,6 +137,11 @@
                 <form action="/users/cards" method="get">
                     <button class="btn">📇 Manage Cards</button>
                 </form>
+
+                <form action="/categories" method="get">
+                    <button class="btn">🏷️ View All Categories</button>
+                </form>
+
             </div>
 
         </div>

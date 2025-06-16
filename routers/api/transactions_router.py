@@ -53,11 +53,11 @@ async def confirm_transaction(transaction_id: int, u_token: str = Header()):
         return responses.InternalServerError()
 
 @api_transactions_router.put("/{transaction_id}/decline")
-def decline_transaction(transaction_id: int, u_token: str = Header()):
+async def decline_tran(transaction_id: int, u_token: str = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
-        is_deleted = service.decline_transaction(transaction_id, user)
+        is_deleted = await service.decline_transaction(transaction_id, user)
         if not is_deleted:
             return responses.NotFound("Transaction not found or cannot be declined.")
         return responses.OK("Transaction declined successfully.")

@@ -667,7 +667,7 @@ body {
     padding: 2em;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 2px 16px rgba(50,50,93,.12);
+    box-shadow: 0 4px 32px rgba(70, 110, 200, 0.06);
 }
 
 input[type="text"], input[type="number"], textarea, select {
@@ -677,4 +677,17 @@ input[type="text"], input[type="number"], textarea, select {
     width: 100%;
     font-size: 1em;
     margin-bottom: 0.2em;
+}
+
+table tr:hover {
+    background: #f0f3fa;
+    transition: background 0.18s;
+}
+
+.btn-sm {
+    font-size: 0.9em;
+    padding: 0.4em 1em;
+    border-radius: 4px;
+    line-height: 1.2;
+    box-shadow: 0 1px 4px rgba(70,110,200,0.07);
 }

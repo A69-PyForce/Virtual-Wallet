@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Categories</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    {% from 'macros.html' import load_navbar, load_footer %}
+</head>
+<body>
+    {{ load_navbar(get_user(request)) }}
+
+    <div class="container" style="max-width: 700px;">
+        <h2 style="text-align:center; margin-bottom:2rem;">Your Categories</h2>
+        <table style="margin: 0 auto 2rem auto; border-collapse: collapse; min-width: 440px; box-shadow: 0 2px 8px #eee; border-radius: 12px; overflow: hidden; background: #fff;">
+            <thead style="background: #f5f5f5;">
+                <tr>
+                    <th style="padding: 10px;">Name</th>
+                    <th style="padding: 10px;">Image</th>
+                    <th style="padding: 10px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px 12px;">{{ category.name }}</td>
+                    <td style="padding: 12px 16px; text-align: center;">
+                        {% if category.image_url %}
+                            <img src="{{ category.image_url }}" width="48" height="48" style="object-fit: contain; border-radius: 7px; background: #fff; border: 1px solid #eee;">
+                        {% endif %}
+                    </td>
+                    <td style="padding: 8px 12px;">
+                        <form action="/categories/{{ category.id }}/edit" method="get" style="display:inline;">
+                            <button type="submit" class="btn btn-secondary" style="margin-right: 4px;">Edit</button>
+                        </form>
+                        <form action="/categories/{{ category.id }}/delete" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="form" style="margin-top: 2rem;">
+            <h3 style="margin-bottom:1rem;">Add New Category</h3>
+            <form action="/categories/new" method="post" style="width:100%;">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" name="name" id="name" placeholder="Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="image_url">Image URL (optional)</label>
+                    <input type="text" name="image_url" id="image_url" placeholder="Image URL (optional)">
+                </div>
+                <button type="submit" class="btn" style="width:100%;">Add</button>
+            </form>
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+</html>
