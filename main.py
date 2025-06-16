@@ -21,6 +21,7 @@ from routers.api.recurring_router import api_recurring_router
 # WEB Router imports
 from routers.web.home_router import web_home_router
 from routers.web.users_router import web_users_router
+from routers.web.contacts_router import web_contacts_router
 
 # FastAPI app
 app = FastAPI()
@@ -38,6 +39,7 @@ app.include_router(api_recurring_router, tags=["API", "Recurring"])
 # WEB Routers
 app.include_router(web_home_router, tags=["WEB", "Home"])
 app.include_router(web_users_router, tags=["WEB", "Users"])
+app.include_router(web_contacts_router, tags=["WEB", "Contacts"])
 app.include_router(web_transactions_router, tags=["WEB", "Transactions"])
 app.include_router(web_transactions_categories_router, tags=["WEB", "Transaction Categories"])
 
@@ -54,4 +56,4 @@ if __name__ == "__main__":
     dump_all_currencies()
     
     # Start server with uvicorn
-    uvicorn.run(app="main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)

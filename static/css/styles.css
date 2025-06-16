@@ -106,8 +106,8 @@ body {
     border-radius: 10px;
     padding: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-left: 8rem;
-    margin-right: 8rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
 }
 
 .page.active {
@@ -180,6 +180,10 @@ body {
     background: #5a6268;
 }
 
+.hidden {
+    display: none;
+}
+
 .card {
     background: white;
     border-radius: 10px;
@@ -193,6 +197,7 @@ body {
     color: white;
     text-align: center;
     padding: 2rem;
+    border-radius: 0.8rem;
 }
 
 .balance-amount {
@@ -429,7 +434,8 @@ body {
 }
 
 .bank-cards-container {
-    max-height: 390px;
+    min-height: 410px;
+    max-height: 410px;
     overflow-y: auto;
     padding-right: 10px;
     scrollbar-width: thin;

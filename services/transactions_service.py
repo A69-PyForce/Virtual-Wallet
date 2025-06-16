@@ -30,9 +30,12 @@ def get_transactions_for_user(user_id: int, limit: int | None = None) -> UserTra
         WHERE t.sender_id = ? OR t.receiver_id = ?
         ORDER BY t.id DESC
     """
+    sql_params = [user_id, user_id]
     if limit:
-        sql += " LIMIT 3"
-    rows = read_query(sql, (user_id, user_id))
+        sql += " LIMIT ?"
+        sql_params.append(limit)
+        
+    rows = read_query(sql=sql, sql_params=sql_params)
     return UserTransactionsResponse(transactions=[TransactionOut.from_query(row) for row in rows])
 
 async def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:

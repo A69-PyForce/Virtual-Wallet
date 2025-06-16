@@ -7,59 +7,349 @@
     <link rel="stylesheet" href="/static/css/styles.css">
     {% from 'macros.html' import load_navbar, load_footer %}
     <title>Contacts</title>
+    <style>
+        .contacts-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .contact-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination a {
+            text-decoration: none;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover {
+            background: #f0f0f0;
+        }
+
+        .pagination button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .contacts-stats {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .search-results {
+            margin-top: 1rem;
+        }
+
+        .search-results .contact-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .search-results .contact-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-pagination {
+            margin-top: 1rem;
+        }
+
+        .no-results {
+            color: #666;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 
 <body>
     {{ load_navbar(get_user(request)) }}
 
-    <!-- Contacts -->
-    <div class="container">
+    <div class="contacts-container">
         <div id="contacts" class="page">
             <h2>Contacts</h2>
-            <!--Insert search logic here-->
+
+            {% if request.query_params.get('error') %}
+            <div class="alert alert-danger">
+                {{ request.query_params.get('error') }}
+            </div>
+            {% endif %}
+
+            {% if request.query_params.get('success') %}
+            <div class="alert alert-success">
+                {{ request.query_params.get('success') }}
+            </div>
+            {% endif %}
+
             <div class="search-bar">
                 <input type="text" id="contactSearch" placeholder="Search for users to add...">
-                <button class="btn">Search Users</button>
+                <button class="btn btn-primary" onclick="searchUsers()">Search Users</button>
+            </div>
+
+            <div class="card hidden" id="searchCard">
+                <h3>Search Results</h3>
+                <div id="searchResults" class="search-results">
+                    <p>Search for users above to add them to your contacts.</p>
+                </div>
+                <div id="searchPagination" class="search-pagination"></div>
             </div>
 
             <div class="card">
                 <h3>Your Contacts</h3>
+                <div class="contacts-stats">
+                    Showing {{ contacts|length }} of {{ total_count }} contacts
+                    {% if total_pages > 1 %}
+                    (Page {{ current_page }} of {{ total_pages }})
+                    {% endif %}
+                </div>
                 <div id="contactsList">
-                    <!-- Insert Jinja2 contacts logic here -->
+                    {% if contacts %}
+                    {% for contact in contacts %}
                     <div class="contact-item">
-                        <div>
-                            <div><strong>Alice Johnson</strong></div>
-                            <div style="color: #666;">alice.johnson@email.com</div>
+                        <div class="contact-info">
+                            <img class="user-avatar" style="width: 48px; height: 48px;"
+                                src="{{ contact.avatar_url or '/static/images/default_user_avatar.png' }}"
+                                alt="User Avatar">
+                            <div>
+                                <div><strong>{{ contact.username }}</strong></div>
+                                <div style="color: #666;">{{ contact.email }}</div>
+                            </div>
                         </div>
-                        <button class="btn btn-danger">Remove</button>
+                        <form action="/users/contacts/remove" method="POST" style="margin: 0;">
+                            <input type="hidden" name="username" value="{{ contact.username }}">
+                            <button type="submit" class="btn btn-danger">Remove</button>
+                        </form>
                     </div>
-                    <div class="contact-item">
-                        <div>
-                            <div><strong>Bob Smith</strong></div>
-                            <div style="color: #666;">bob.smith@email.com</div>
-                        </div>
-                        <button class="btn btn-danger">Remove</button>
-                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p>No contacts found.</p>
+                    {% endif %}
                 </div>
 
+                {% if total_pages > 1 %}
                 <div class="pagination">
-                    <!-- Insert page pagination logic here -->
-                    <button class="active">1</button>
-                    <button>2</button>
-                    <button>3</button>
-                </div>
-            </div>
+                    {% if current_page > 1 %}
+                    <a
+                        href="?page={{ current_page - 1 }}{% if request.query_params.get('error') %}&error={{ request.query_params.get('error') }}{% endif %}{% if request.query_params.get('success') %}&success={{ request.query_params.get('success') }}{% endif %}">
+                        <button>&laquo; Previous</button>
+                    </a>
+                    {% endif %}
 
-            <div class="card">
-                <h3>Search Results</h3>
-                <div id="searchResults">
-                    <p>Search for users above to add them to your contacts.</p>
+                    {% for page in range(1, total_pages + 1) %}
+                    <a
+                        href="?page={{ page }}{% if request.query_params.get('error') %}&error={{ request.query_params.get('error') }}{% endif %}{% if request.query_params.get('success') %}&success={{ request.query_params.get('success') }}{% endif %}">
+                        <button class="{{ 'active' if page == current_page else '' }}">{{ page }}</button>
+                    </a>
+                    {% endfor %}
+
+                    {% if current_page < total_pages %} <a
+                        href="?page={{ current_page + 1 }}{% if request.query_params.get('error') %}&error={{ request.query_params.get('error') }}{% endif %}{% if request.query_params.get('success') %}&success={{ request.query_params.get('success') }}{% endif %}">
+                        <button>Next &raquo;</button>
+                        </a>
+                        {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
     {{ load_footer() }}
+
+    <script>
+        let currentSearchPage = 1;
+        const pageSize = 5;
+
+        function searchUsers() {
+            const searchInput = document.getElementById('contactSearch');
+            const username = searchInput.value.trim();
+
+            if (!username) {
+                document.getElementById('searchResults').innerHTML = '<p>Please enter a username to search.</p>';
+                document.getElementById('searchPagination').innerHTML = '';
+                return;
+            }
+
+            fetch(`/api/users?username=${encodeURIComponent(username)}&page=${currentSearchPage}&page_size=${pageSize}`, {
+                headers: {
+                    'u-token': document.cookie.split('=')[1]
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const searchResults = document.getElementById('searchResults');
+                    const searchPagination = document.getElementById('searchPagination');
+
+                    document.getElementById("searchCard").className = "card";
+
+                    if (data.users && data.users.length > 0) {
+                        let html = '';
+                        data.users.forEach(user => {
+                            html += `
+                        <div class="contact-item">
+                            <div class="contact-info">
+                                <img class="user-avatar"
+                                    src="${user.avatar_url || '/static/images/default_user_avatar.png'}"
+                                    alt="User Avatar">
+                                <div>
+                                    <div><strong>${user.username}</strong></div>
+                                </div>
+                            </div>
+                            <form action="/users/contacts/add" method="POST" style="margin: 0;">
+                                <input type="hidden" name="username" value="${user.username}">
+                                <button type="submit" class="btn btn-primary">Add Contact</button>
+                            </form>
+                        </div>
+                    `;
+                        });
+                        searchResults.innerHTML = html;
+
+                        // Add pagination if there are multiple pages
+                        const totalPages = Math.ceil(data.total_count / pageSize);
+                        if (totalPages > 1) {
+                            let paginationHtml = '<div class="pagination">';
+
+                            if (currentSearchPage > 1) {
+                                paginationHtml += `<button onclick="changeSearchPage(${currentSearchPage - 1})">&laquo; Previous</button>`;
+                            }
+
+                            for (let i = 1; i <= totalPages; i++) {
+                                paginationHtml += `
+                            <button class="${i === currentSearchPage ? 'active' : ''}" 
+                                    onclick="changeSearchPage(${i})">${i}</button>
+                        `;
+                            }
+
+                            if (currentSearchPage < totalPages) {
+                                paginationHtml += `<button onclick="changeSearchPage(${currentSearchPage + 1})">Next &raquo;</button>`;
+                            }
+
+                            paginationHtml += '</div>';
+                            searchPagination.innerHTML = paginationHtml;
+                        } else {
+                            searchPagination.innerHTML = '';
+                        }
+                    } else {
+                        searchResults.innerHTML = '<p class="no-results">No users found matching your search.</p>';
+                        searchPagination.innerHTML = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('searchResults').innerHTML = '<p class="no-results">An error occurred while searching.</p>';
+                    document.getElementById('searchPagination').innerHTML = '';
+                });
+        }
+
+        function changeSearchPage(page) {
+            currentSearchPage = page;
+            searchUsers();
+        }
+
+        // Add event listener for Enter key in search input
+        document.getElementById('contactSearch').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchUsers();
+            }
+        });
+    </script>
 </body>
 
 </html>
