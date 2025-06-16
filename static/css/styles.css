@@ -151,11 +151,17 @@ body {
 }
 
 .btn-success {
-    background: #28a745;
+    background: #38c172;
+    color: #fff;
+    border: none;
+    padding: 0.5em 1.5em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn-success:hover {
-    background: #218838;
+    background: #259d57;
 }
 
 .btn-danger {
@@ -638,4 +644,31 @@ body {
 
 .btn-accept:hover {
     background-color: #45a049;
+}
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 0 auto;
+    max-width: 450px;
+    padding: 2em;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(50,50,93,.12);
+}
+
+input[type="text"], input[type="number"], textarea, select {
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    padding: 0.5em;
+    width: 100%;
+    font-size: 1em;
+    margin-bottom: 0.2em;
 }

@@ -1,6 +1,8 @@
 import asyncio
 
 from common.error_handlers import register_error_handlers
+from routers.web.transaction_categories_router import web_transactions_categories_router
+from routers.web.transactions_router import web_transactions_router
 from utils.currencies_utils import dump_all_currencies
 from recurring_scheduler import process_due_recurring
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +38,8 @@ app.include_router(api_recurring_router, tags=["API", "Recurring"])
 # WEB Routers
 app.include_router(web_home_router, tags=["WEB", "Home"])
 app.include_router(web_users_router, tags=["WEB", "Users"])
+app.include_router(web_transactions_router, tags=["WEB", "Transactions"])
+app.include_router(web_transactions_categories_router, tags=["WEB", "Transaction Categories"])
 
 # Error handlers
 register_error_handlers(app)

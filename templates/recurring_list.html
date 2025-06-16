@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container page">
+    <h2 class="mb-3">Recurring Transactions</h2>
+    <a href="/recurring/new" class="btn btn-success">+ New Recurring</a>
+
+    {% for r in recurring %}
+    <div class="card">
+        <div class="transaction-item">
+            <div>
+                <strong>{{ r.amount }} {{ r.currency }}</strong> 
+                <span>({{ r.recurrence_type }})</span><br>
+                <small>{{ r.start_date }} {% if r.end_date %}→ {{ r.end_date }}{% endif %}</small><br>
+                <small>{{ r.description }}</small>
+            </div>
+            <form method="post" action="/recurring/{{ r.id }}/cancel">
+                <button class="btn btn-danger">Cancel</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p>No recurring transactions found.</p>
+    {% endfor %}
+</div>
+{% endblock %}
