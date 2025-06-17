@@ -5,90 +5,269 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     {% from 'macros.html' import load_navbar, load_footer %}
     <title>New Transaction</title>
+    <style>
+        .transaction-form {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            color: #0d6efd;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+            outline: none;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+            outline: none;
+        }
+
+        .category-select-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .category-select-group select {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+        .btn-success {
+            background-color: #198754;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #157347;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .alert-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+
+        .recurring-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .recurring-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .recurring-toggle input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+        }
+
+        .recurring-toggle label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .recurring-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .transaction-form {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .recurring-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
     {{ load_navbar(get_user(request)) }}
 
-    <!-- New Transaction -->
     <div class="container">
-        <div id="newTransaction" class="page">
-            <h2>Create New Transaction</h2>
+        <div class="transaction-form">
+            <div class="form-header">
+                <h2><i class="bi bi-plus-circle"></i> Create New Transaction</h2>
+                <p class="text-muted">Fill in the details below to create a new transaction</p>
+            </div>
 
             {% if error %}
-                <div class="error-message" style="margin-bottom: 1rem; color: #c82333; background: #fee2e2; border-radius: 5px; padding: 1em;">
-                    {{ error }}
-                </div>
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            </div>
             {% endif %}
             {% if success %}
-                <div class="success-message" style="margin-bottom: 1rem; color: #38c172; background: #e6ffed; border-radius: 5px; padding: 1em;">
-                    {{ success }}
-                </div>
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle"></i> {{ success }}
+            </div>
             {% endif %}
 
-            <form action="/users/transactions/new" method="post" class="form">
+            <form action="/users/transactions/new" method="post">
+                <div class="form-group">
+                    <label for="category_id"><i class="bi bi-tag"></i> Category</label>
+                    <div class="category-select-group">
+                        <select id="category_id" name="category_id" class="form-select" required>
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <a href="/categories/new" class="btn btn-success" style="text-decoration: none;">
+                            <i class="bi bi-plus-lg"></i> New Category
+                        </a>
+                    </div>
+                </div>
 
                 <div class="form-group">
-                    <label for="category_id">Category</label>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <select id="category_id" name="category_id" required>
-                                <option value="">Select Category</option>
-                                {% for category in categories %}
-                                    <option value="{{ category.id }}">{{ category.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <a href="/categories/new"
-                               class="btn btn-success btn-sm"
-                               style="margin-left: 0.5rem; padding: 0.3em 1em; min-width: unset;">Add New Category</a>
+                    <label for="transactionName"><i class="bi bi-pencil"></i> Transaction Name</label>
+                    <input type="text" id="transactionName" name="name" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionDescription"><i class="bi bi-text-paragraph"></i> Description</label>
+                    <textarea id="transactionDescription" name="description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="receiverName"><i class="bi bi-person"></i> Receiver Name</label>
+                    <input type="text" id="receiverName" name="receiver_username" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionAmount"><i class="bi bi-currency-dollar"></i> Amount</label>
+                    <input type="number" id="transactionAmount" name="amount" class="form-control" step="0.01" required>
+                </div>
+
+                <div class="recurring-section">
+                    <div class="recurring-toggle">
+                        <input type="checkbox" id="is_recurring" name="is_recurring"
+                            onchange="toggleRecurringOptions()">
+                        <label for="is_recurring">Make this a recurring transaction</label>
+                    </div>
+
+                    <div id="recurringOptions" style="display: none;">
+                        <div class="recurring-options">
+                            <div class="form-group">
+                                <label for="recurring_interval">Interval</label>
+                                <input type="number" id="recurring_interval" name="recurring_interval"
+                                    class="form-control" min="1" placeholder="Every...">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="recurring_type">Type</label>
+                                <select id="recurring_type" name="recurring_type" class="form-select">
+                                    <option value="DAYS">Days</option>
+                                    <option value="HOURS">Hours</option>
+                                    <option value="MINUTES">Minutes</option>
+                                </select>
+                            </div>
                         </div>
+
+                        <div class="form-group">
+                            <label for="recurring_start"><i class="bi bi-calendar"></i> Start Date & Time</label>
+                            <input type="datetime-local" id="recurring_start" name="recurring_start"
+                                class="form-control">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="transactionName">Transaction Name</label>
-                    <input type="text" id="transactionName" name="name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="transactionDescription">Description</label>
-                    <textarea id="transactionDescription" name="description" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="receiverName">Receiver Name</label>
-                    <input type="text" id="receiverName" name="receiver_username" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="transactionAmount">Amount</label>
-                    <input type="number" id="transactionAmount" name="amount" step="0.01" required>
-                </div>
-
-                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="is_recurring" name="is_recurring" style="width:auto;" onchange="toggleRecurringOptions()">
-                    <label for="is_recurring" style="margin:0;">Recurring Transaction</label>
-                </div>
-
-
-                <div class="form-group" id="recurringOptions" style="display: none;">
-                    <label for="recurring_interval">Interval</label>
-                    <input type="number" id="recurring_interval" name="recurring_interval" min="1" placeholder="Every...">
-
-                    <label for="recurring_type">Type</label>
-                    <select id="recurring_type" name="recurring_type">
-                        <option value="DAYS">Days</option>
-                        <option value="HOURS">Hours</option>
-                        <option value="MINUTES">Minutes</option>
-                    </select>
-                </div>
-
-                <div class="form-group" id="recurringStart" style="display: none;">
-                    <label for="recurring_start">Start Date & Time</label>
-                    <input type="datetime-local" id="recurring_start" name="recurring_start">
-                </div>
-
-                <button type="submit" class="btn">Create Transaction</button>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="bi bi-check-lg"></i> Create Transaction
+                </button>
             </form>
         </div>
     </div>
@@ -96,40 +275,31 @@
     {{ load_footer() }}
 
     <script>
-    function toggleRecurringOptions() {
-        // Grab the recurring checkbox and related fields
-        const recurringCheckbox   = document.getElementById("is_recurring");
-        const recurringOptions    = document.getElementById("recurringOptions");
-        const recurringStartBlock = document.getElementById("recurringStart");
+        function toggleRecurringOptions() {
+            const recurringCheckbox = document.getElementById("is_recurring");
+            const recurringOptions = document.getElementById("recurringOptions");
+            const recurringStartBlock = document.getElementById("recurringStart");
 
-        // Grab each input/select inside the recurring block
-        const intervalInput       = document.getElementById("recurring_interval");
-        const typeSelect          = document.getElementById("recurring_type");
-        const startInput          = document.getElementById("recurring_start");
+            const intervalInput = document.getElementById("recurring_interval");
+            const typeSelect = document.getElementById("recurring_type");
+            const startInput = document.getElementById("recurring_start");
 
-        // Determine whether to show or hide
-        const show = recurringCheckbox.checked;
+            const show = recurringCheckbox.checked;
 
-        // Show or hide the recurring options container
-        recurringOptions.style.display    = show ? "block" : "none";
-        if (recurringStartBlock) {
-            recurringStartBlock.style.display = show ? "block" : "none";
+            recurringOptions.style.display = show ? "block" : "none";
+            if (recurringStartBlock) {
+                recurringStartBlock.style.display = show ? "block" : "none";
+            }
+
+            intervalInput.disabled = !show;
+            typeSelect.disabled = !show;
+            if (startInput) {
+                startInput.disabled = !show;
+            }
         }
 
-        // Enable the fields when visible, disable them when hidden
-        intervalInput.disabled = !show;
-        typeSelect   .disabled = !show;
-        if (startInput) {
-            startInput.disabled = !show;
-        }
-    }
-
-    // Run once on page load to set the correct initial state
-    document.addEventListener("DOMContentLoaded", toggleRecurringOptions);
-
-    // Also run whenever the checkbox is clicked
-    document.getElementById("is_recurring")
-            .addEventListener("change", toggleRecurringOptions);
+        document.addEventListener("DOMContentLoaded", toggleRecurringOptions);
+        document.getElementById("is_recurring").addEventListener("change", toggleRecurringOptions);
     </script>
 </body>
 

@@ -4,18 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <link rel="stylesheet" href="/static/css/styles.css" />
 
   <!-- Flatpickr CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
-  />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
 
   {% from 'macros.html' import load_navbar, load_footer %}
 
-  <title>All Transactions</title>
+  <title>Transactions</title>
 
   <!-- Custom CSS style -->
   <style>
@@ -50,158 +46,397 @@
         0 0 0 0.2rem rgba(100, 100, 100, 0.25);
       outline: none;
     }
+
+    .transactions-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .filters {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .filters-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #495057;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 1rem;
+      background-color: white;
+    }
+
+    .transactions-table {
+      width: 100%;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .transactions-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .transactions-table th {
+      background-color: #f8f9fa;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    .transactions-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #dee2e6;
+      color: #212529;
+    }
+
+    .transactions-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .transactions-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.75rem;
+      border-radius: 50rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-badge.success {
+      background-color: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .status-badge.pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-badge.declined {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .pagination a {
+      text-decoration: none;
+    }
+
+    .pagination button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pagination button:hover {
+      background: #f0f0f0;
+    }
+
+    .pagination button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+
+    .no-transactions {
+      text-align: center;
+      padding: 3rem;
+      color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+      .filters-form {
+        grid-template-columns: 1fr;
+      }
+
+      .transactions-table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .page-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+
+    .category-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .category-image {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    .filter-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-control {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 0.5rem;
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 
 <body>
   {{ load_navbar(get_user(request)) }}
 
-  <div class="container my-5">
-    <div class="row">
-
-      <!-- FILTER SIDEBAR -->
-      <aside class="col-lg-3 mb-4">
-        <div class="card p-3 h-100">
-          <h5 class="card-title">🔍 Filters</h5>
-          <form method="get" action="/users/transactions/history" id="filterForm">
-            <div class="mb-3">
-              <label for="status" class="form-label">Status</label>
-              <select id="status" name="status" class="form-select">
-                <option value="">All</option>
-                <option value="pending"   {% if status == "pending"   %}selected{% endif %}>Pending</option>
-                <option value="confirmed" {% if status == "confirmed" %}selected{% endif %}>Confirmed</option>
-                <option value="declined"  {% if status == "declined"  %}selected{% endif %}>Declined</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="direction" class="form-label">Direction</label>
-              <select id="direction" name="direction" class="form-select">
-                <option value="">All</option>
-                <option value="incoming" {% if direction == "incoming" %}selected{% endif %}>Incoming</option>
-                <option value="outgoing" {% if direction == "outgoing" %}selected{% endif %}>Outgoing</option>
-              </select>
-            </div>
-
-            <div class="row gx-2 mb-3">
-              <div class="col">
-                <label for="start_date" class="form-label">From</label>
-                <input
-                  type="date"
-                  id="start_date"
-                  name="start_date"
-                  value="{{ start_date }}"
-                  class="form-control"
-                />
-              </div>
-              <div class="col">
-                <label for="end_date" class="form-label">To</label>
-                <input
-                  type="date"
-                  id="end_date"
-                  name="end_date"
-                  value="{{ end_date }}"
-                  class="form-control"
-                />
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="sort_by" class="form-label">Sort by</label>
-              <select id="sort_by" name="sort_by" class="form-select">
-                <option value="date"   {% if sort_by == "date"   %}selected{% endif %}>Date</option>
-                <option value="amount" {% if sort_by == "amount" %}selected{% endif %}>Amount</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="sort_order" class="form-label">Order</label>
-              <select id="sort_order" name="sort_order" class="form-select">
-                <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Descending</option>
-                <option value="asc"  {% if sort_order == "asc"  %}selected{% endif %}>Ascending</option>
-              </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 mb-2">🔎 Filter</button>
-            <a href="/users/transactions/history" class="btn btn-outline-secondary w-100">
-              Clear
-            </a>
-          </form>
-        </div>
-      </aside>
-
-      <!-- TRANSACTION LIST -->
-      <section class="col-lg-9">
-        <h2 class="mb-4">All Transactions</h2>
-
-        {% if transactions %}
-          {% for tx in transactions %}
-            <div class="card mb-3 p-3 d-flex justify-content-between align-items-center">
-              <div>
-                <strong>{{ tx.name }}</strong><br />
-                {% if user.id == tx.receiver_id %}
-                  <small>From: {{ tx.sender_name or '-' }}</small><br />
-                {% else %}
-                  <small>To: {{ tx.receiver_name or '-' }}</small><br />
-                {% endif %}
-                <small>Category: {{ tx.category_name or '-' }}</small><br />
-                <small>Created: {{ tx.created_at }}</small><br />
-                <small>
-                  {% if tx.is_accepted == 1 %}
-                    <span class="text-success">✓ Accepted</span>
-                  {% elif tx.is_accepted == 0 %}
-                    <span class="text-warning">⏳ Pending</span>
-                  {% else %}
-                    <span class="text-danger">✗ Declined</span>
-                  {% endif %}
-                </small>
-              </div>
-
-              <div class="text-end">
-                {% if user.id == tx.receiver_id %}
-                  <div class="transaction-amount positive">
-                    +{{ "%.2f"|format(tx.amount) }} {{ tx.currency_code }}
-                  </div>
-                {% else %}
-                  <div class="transaction-amount negative">
-                    -{{ "%.2f"|format(tx.original_amount) }} {{ tx.original_currency_code }}
-                  </div>
-                {% endif %}
-
-                <div class="mt-2">
-                  {% if not tx.is_recurring %}
-                    <span class="text-success">1️⃣ One Time</span>
-                  {% else %}
-                    <span class="text-success">🔁 Recurring</span>
-                  {% endif %}
-                </div>
-
-                {% if tx.is_accepted == 0 and user.id == tx.receiver_id %}
-                  <div class="mt-1">
-                    <form
-                      action="/users/transactions/{{ tx.id }}/confirm"
-                      method="post"
-                      class="d-inline"
-                    >
-                      <button class="btn btn-success btn-sm">Confirm</button>
-                    </form>
-                    <form
-                      action="/users/transactions/{{ tx.id }}/decline"
-                      method="post"
-                      class="d-inline"
-                    >
-                      <button class="btn btn-danger btn-sm">Decline</button>
-                    </form>
-                  </div>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p class="text-center text-muted">No transactions found.</p>
-        {% endif %}
-      </section>
+  <div class="transactions-container">
+    <div class="page-header">
+      <h1>Transaction History</h1>
+      <a href="/users/transactions/new" class="btn btn-primary">New Transaction</a>
     </div>
+
+    <div class="filters">
+      <div class="filters-header">
+        <h2>Filters</h2>
+      </div>
+      <form method="get" class="filter-form">
+        <div class="filter-group">
+          <label for="category">Category</label>
+          <select name="category_id" id="category" class="form-control">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}" {% if category.id|string==request.query_params.get('category_id', '' )
+              %}selected{% endif %}>
+              {{ category.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="status">Status</label>
+          <select name="status" id="status" class="form-control">
+            <option value="">All Statuses</option>
+            <option value="pending" {% if request.query_params.get('status')=='pending' %}selected{% endif %}>Pending
+            </option>
+            <option value="confirmed" {% if request.query_params.get('status')=='confirmed' %}selected{% endif %}>
+              Confirmed</option>
+            <option value="declined" {% if request.query_params.get('status')=='declined' %}selected{% endif %}>Declined
+            </option>
+          </select>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="flex items-center space-x-2">
+          <label for="sort_by" class="text-sm font-medium text-gray-700">Sort by:</label>
+          <select name="sort_by" id="sort_by"
+            class="block w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+            <option value="date" {% if sort_by=='date' or sort_by=='created_at' %}selected{% endif %}>Date</option>
+            <option value="amount" {% if sort_by=='amount' %}selected{% endif %}>Amount</option>
+          </select>
+          <select name="sort_order" id="sort_order"
+            class="block w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+            <option value="desc" {% if sort_order=='desc' %}selected{% endif %}>Descending</option>
+            <option value="asc" {% if sort_order=='asc' %}selected{% endif %}>Ascending</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="start_date">Start Date</label>
+          <input type="date" name="start_date" id="start_date" class="form-control"
+            value="{{ request.query_params.get('start_date', '') }}">
+        </div>
+
+        <div class="filter-group">
+          <label for="end_date">End Date</label>
+          <input type="date" name="end_date" id="end_date" class="form-control"
+            value="{{ request.query_params.get('end_date', '') }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+      </form>
+    </div>
+
+    {% if transactions %}
+    <div class="transactions-list">
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for transaction in transactions %}
+          <tr>
+            <td>{{ transaction.name }}</td>
+            <td>
+              <div class="category-cell">
+                <img src="{{ transaction.category_image or '/static/images/default_category_image.png' }}"
+                  alt="{{ transaction.category_name }}" class="category-image">
+                <span>{{ transaction.category_name }}</span>
+              </div>
+            </td>
+            <td>
+              {% if user.id != transaction.sender_id %}
+              {{ "%.2f"|format(transaction.amount) }} {{ transaction.currency_code }}
+              {% else %}
+              {{ "%.2f"|format(transaction.original_amount) }} {{ transaction.original_currency_code }}
+              {% endif %}
+            </td>
+            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+              <span
+                class="status-badge {% if transaction.is_accepted == 1 %}success{% elif transaction.is_accepted == 0 %}pending{% else %}declined{% endif %}">
+                {% if transaction.is_accepted == 1 %}
+                Confirmed
+                {% elif transaction.is_accepted == 0 %}
+                Pending
+                {% else %}
+                Declined
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              <a href="/users/transactions/{{ transaction.id }}" class="btn btn-sm btn-primary">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+      {% if current_page > 1 %}
+      <a
+        href="?page={{ current_page - 1 }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+        <button>&laquo; Previous</button>
+      </a>
+      {% endif %}
+
+      {% for page in range(1, total_pages + 1) %}
+      <a
+        href="?page={{ page }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+        <button class="{{ 'active' if page == current_page else '' }}">{{ page }}</button>
+      </a>
+      {% endfor %}
+
+      {% if current_page < total_pages %} <a
+        href="?page={{ current_page + 1 }}{% for key, value in request.query_params.items() %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+        <button>Next &raquo;</button>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="no-transactions">
+      <h3>No Transactions Found</h3>
+      <p>Try adjusting your filters or create a new transaction.</p>
+    </div>
+    {% endif %}
   </div>
 
   {{ load_footer() }}

@@ -24,7 +24,9 @@
                     </svg>
                 </div>
                 <h1 class="error-title">{{ error_title | default('Oops! Something went wrong') }}</h1>
-                <p class="error-message">{{ error_message | default('An unexpected error occurred. Please try again
+                <p class="error-message" style="margin-bottom: 2rem; font-size: larger;">{{ error_message | default('An
+                    unexpected error
+                    occurred. Please try again
                     later.') }}</p>
                 {% if error_details %}
                 <div class="error-details">

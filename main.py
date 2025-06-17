@@ -1,14 +1,12 @@
-import asyncio
-
-from common.error_handlers import register_error_handlers
-from routers.web.recurring_router import web_recurring_router
 from routers.web.transaction_categories_router import web_transactions_categories_router
 from routers.web.transactions_router import web_transactions_router
+from common.error_handlers import register_error_handlers
 from utils.currencies_utils import dump_all_currencies
 from recurring_scheduler import process_due_recurring
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI
 import uvicorn
+import asyncio
 
 # API Routers imports
 from routers.api.admin_router import api_admin_router
@@ -23,6 +21,7 @@ from routers.api.recurring_router import api_recurring_router
 from routers.web.home_router import web_home_router
 from routers.web.users_router import web_users_router
 from routers.web.contacts_router import web_contacts_router
+from routers.web.recurring_router import web_recurring_router
 
 # FastAPI app
 app = FastAPI()
@@ -49,14 +48,11 @@ app.include_router(web_recurring_router, tags=["WEB", "Recurring Transaction"])
 # Error handlers
 register_error_handlers(app)
 
+@app.on_event("startup")
+async def start_recurring_scheduler():
+    asyncio.create_task(process_due_recurring())
+
 # Run file as main
 if __name__ == "__main__":
-    
-    # Recurring transactions processor
-    asyncio.run(process_due_recurring())
-    
-    # Uncomment on first startup to cache currencies and also dump them in database
-    dump_all_currencies()
-    
-    # Start server with uvicorn
+    # dump_all_currencies()  # Uncomment if needed
     uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)

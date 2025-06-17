@@ -1,7 +1,6 @@
 from datetime import datetime
-
 from data.models import TransactionOut, TransactionCreate, UserFromDB, TransactionFilterParams, \
-    UserTransactionsResponse, TransactionTemplate
+    UserTransactionsResponse, TransactionTemplate, ListTransactions, TransactionInfo
 from data.database import read_query, insert_query, update_query
 from services.users_service import get_user_by_username
 from utils import currencies_utils
@@ -161,15 +160,12 @@ async def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
     if not refund_sender:
         return False
 
-    delete_sql = "DELETE FROM Transactions WHERE id = ? AND receiver_id = ? AND is_accepted = 0"
+    delete_sql = "UPDATE Transactions SET is_accepted = -1 WHERE id = ? AND receiver_id = ? AND is_accepted = 0"
     return update_query(delete_sql, (transaction_id, user.id))
 
 
-def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterParams) -> list[TransactionOut]:
-    query = """
-        SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
-               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, t.original_amount,
-               t.original_currency_code, tc.name AS category_name, u.username AS receiver_username
+def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterParams) -> ListTransactions:
+    base_query = """
         FROM Transactions t
         JOIN TransactionCategories tc ON t.category_id = tc.id
         JOIN Users AS u ON t.receiver_id = u.id
@@ -177,6 +173,7 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
         WHERE (t.sender_id = ? OR t.receiver_id = ?)
     """
     params = [user.id, user.id]
+    
     #converting data
     if filters.start_date and isinstance(filters.start_date, str):
         filters.start_date = datetime.strptime(filters.start_date, '%Y-%m-%d').date()
@@ -185,49 +182,83 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
 
     #date filters
     if filters.start_date:
-        query += " AND DATE(t.created_at) >= ?"
+        base_query += " AND DATE(t.created_at) >= ?"
         params.append(filters.start_date)
     if filters.end_date:
-        query += " AND DATE(t.created_at) <= ?"
+        base_query += " AND DATE(t.created_at) <= ?"
         params.append(filters.end_date)
     # direction filter
     if filters.direction == "incoming":
-        query += " AND t.receiver_id = ?"
+        base_query += " AND t.receiver_id = ?"
         params.append(user.id)
     elif filters.direction == "outgoing":
-        query += " AND t.sender_id = ?"
+        base_query += " AND t.sender_id = ?"
         params.append(user.id)
     # category filter
     if filters.category_id:
-        query += " AND t.category_id = ?"
+        base_query += " AND t.category_id = ?"
         params.append(filters.category_id)
     # Status filter
     if filters.status:
         if filters.status == "pending":
-            query += " AND t.is_accepted = 0"
+            base_query += " AND t.is_accepted = 0"
         elif filters.status == "confirmed":
-            query += " AND t.is_accepted = 1"
+            base_query += " AND t.is_accepted = 1"
         elif filters.status == "declined":
-            query += " AND t.is_accepted = -1"
+            base_query += " AND t.is_accepted = -1"
+
+    # Get total count
+    count_query = f"SELECT COUNT(*) {base_query}"
+    total_count = read_query(count_query, tuple(params))[0][0]
 
     # Default values for pagination
-    filters.limit = filters.limit or 30
-    filters.offset = filters.offset or 0
+    page_size = filters.limit or 30
+    total_pages = (total_count + page_size - 1) // page_size
+    
+    # Ensure page is within valid range
+    current_page = filters.offset // page_size + 1 if filters.offset else 1
+    if current_page > total_pages:
+        current_page = total_pages
+    if current_page < 1:
+        current_page = 1
+        
+    offset = (current_page - 1) * page_size
 
     # Sorting (safe against SQL injection)
-    if filters.sort_by not in ("date", "amount"):
+    if filters.sort_by not in ("date", "amount", "name"):
         sort_column = "t.created_at"
     else:
-        sort_column = "t.created_at" if filters.sort_by == "date" else "t.amount"
+        sort_column = {
+            "date": "t.created_at",
+            "amount": "t.amount",
+            "name": "t.name"
+        }[filters.sort_by]
     sort_order = filters.sort_order.upper() if (filters.sort_order and filters.sort_order.upper()
                                                 in ("ASC", "DESC")) else "DESC"
-    query += f" ORDER BY {sort_column} {sort_order}"
-
-    query += " LIMIT ? OFFSET ?"
-    params += [filters.limit, filters.offset]
+    
+    # Main query for transactions
+    query = f"""
+        SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
+               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, t.original_amount,
+               t.original_currency_code, tc.name AS category_name, u.username AS receiver_username,
+               tc.image_url AS category_image_url
+        {base_query}
+        ORDER BY {sort_column} {sort_order}
+        LIMIT ? OFFSET ?
+    """
+    params += [page_size, offset]
 
     results = read_query(query, tuple(params))
-    return [TransactionOut.from_query(row) for row in results]
+    transactions = [TransactionOut.from_query(row) for row in results]
+    
+    return ListTransactions(
+        transactions=transactions,
+        total_count=total_count,
+        total_pages=total_pages,
+        current_page=current_page,
+        page=current_page,
+        page_size=page_size
+    )
 
 async def create_transaction_from_recurring(template: TransactionTemplate) -> bool:
     if template.sender_id == template.receiver_id:
@@ -282,3 +313,27 @@ async def create_transaction_from_recurring(template: TransactionTemplate) -> bo
 
     print(f"[Recurring] Transaction created from {template.sender_id} to {template.receiver_id}.")
     return True
+
+def get_transaction_by_id(transaction_id: int, user: UserFromDB) -> TransactionInfo | None:
+    """
+    Get a single transaction by ID, ensuring the user has permission to view it.
+    The user must be either the sender or receiver of the transaction.
+    """
+    sql = """
+        SELECT 
+            t.id, t.name, t.description, t.sender_id, t.receiver_id,
+            t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at,
+            t.original_amount, t.original_currency_code, tc.name AS category_name,
+            s.username AS sender_username, r.username AS receiver_username,
+            tc.image_url AS category_image_url
+        FROM Transactions t
+        JOIN TransactionCategories tc ON t.category_id = tc.id
+        JOIN Users s ON t.sender_id = s.id
+        JOIN Users r ON t.receiver_id = r.id
+        JOIN Currencies c ON t.currency_id = c.id
+        WHERE t.id = ? AND (t.sender_id = ? OR t.receiver_id = ?)
+    """
+    result = read_query(sql, (transaction_id, user.id, user.id))
+    if not result:
+        return None
+    return TransactionInfo.from_query(result[0])
