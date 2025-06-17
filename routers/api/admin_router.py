@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Header
-from data.models import UserSummary, UserFilterParams, TransactionOut, AdminTransactionFilterParams
+from data.models import UserSummary, UserFilterParams, TransactionOut, AdminTransactionFilterParams, AdminTransactionOut
 from common import authenticate, responses
 import services.admin_service as admin_service
 
@@ -64,7 +64,7 @@ def unblock_user(user_id: int, u_token: str = Header()):
         print(e)
         return responses.InternalServerError()
 
-@api_admin_router.get("/transactions", response_model=list[TransactionOut])
+@api_admin_router.get("/transactions", response_model=list[AdminTransactionOut])
 def get_all_transactions(filters: AdminTransactionFilterParams = Depends(), u_token: str = Header()):
     admin = authenticate.get_user_or_raise_401(u_token)
     if not admin.is_admin:
