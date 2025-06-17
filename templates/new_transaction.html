@@ -40,21 +40,6 @@
             font-weight: 500;
         }
 
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-control:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-            outline: none;
-        }
-
         .form-select {
             width: 100%;
             padding: 0.75rem;
@@ -79,38 +64,6 @@
 
         .category-select-group select {
             flex: 1;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background-color: #0d6efd;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-        }
-
-        .btn-success {
-            background-color: #198754;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #157347;
-        }
-
-        .btn-block {
-            width: 100%;
-            margin-top: 1rem;
         }
 
         .alert {
@@ -214,12 +167,12 @@
 
                 <div class="form-group">
                     <label for="transactionName"><i class="bi bi-pencil"></i> Transaction Name</label>
-                    <input type="text" id="transactionName" name="name" class="form-control" required>
+                    <input type="text" id="transactionName" name="name" class="form" required>
                 </div>
 
                 <div class="form-group">
                     <label for="transactionDescription"><i class="bi bi-text-paragraph"></i> Description</label>
-                    <textarea id="transactionDescription" name="description" class="form-control" rows="3"
+                    <textarea id="transactionDescription" name="description" class="form" rows="3"
                         style="resize: none;"></textarea>
                 </div>
 
@@ -238,10 +191,10 @@
 
                 <div class="form-group">
                     <label for="transactionAmount"><i class="bi bi-currency-dollar"></i> Amount</label>
-                    <input type="number" id="transactionAmount" name="amount" class="form-control" step="0.01" required>
+                    <input type="number" id="transactionAmount" name="amount" class="form" step="0.01" required>
                 </div>
 
-                <div class="recurring-section">
+                <div class="recurring-section" style="padding-bottom: 0.5rem;">
                     <div class="recurring-toggle">
                         <input type="checkbox" id="is_recurring" name="is_recurring"
                             onchange="toggleRecurringOptions()">
@@ -252,8 +205,8 @@
                         <div class="recurring-options">
                             <div class="form-group">
                                 <label for="recurring_interval">Interval</label>
-                                <input type="number" id="recurring_interval" name="recurring_interval"
-                                    class="form-control" min="1" placeholder="Every...">
+                                <input type="number" id="recurring_interval" name="recurring_interval" class="form"
+                                    min="1" placeholder="Every...">
                             </div>
 
                             <div class="form-group">
@@ -268,13 +221,12 @@
 
                         <div class="form-group">
                             <label for="recurring_start"><i class="bi bi-calendar"></i> Start Date & Time</label>
-                            <input type="datetime-local" id="recurring_start" name="recurring_start"
-                                class="form-control">
+                            <input type="datetime-local" id="recurring_start" name="recurring_start" class="form">
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block">
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
                     <i class="bi bi-check-lg"></i> Create Transaction
                 </button>
             </form>

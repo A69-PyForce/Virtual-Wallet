@@ -348,6 +348,7 @@ class UserSummary(BaseModel):
     is_verified: bool
     is_admin: bool
     created_at: datetime
+    avatar_url: str | None
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -359,7 +360,8 @@ class UserSummary(BaseModel):
             is_blocked=bool(row[4]),
             is_verified=bool(row[5]),
             is_admin=bool(row[6]),
-            created_at=row[7]
+            created_at=row[7],
+            avatar_url=row[8]
         )
 
 class UserFilterParams(BaseModel):
@@ -402,9 +404,9 @@ class AdminTransactionOut(BaseModel):
     name: str
     amount: float
     currency_code: str
-    sender_username: Optional[str]
-    receiver_username: Optional[str]
-    is_accepted: bool
+    sender_username: str
+    receiver_username: str
+    is_accepted: int
     created_at: datetime
 
     @classmethod
@@ -416,6 +418,14 @@ class AdminTransactionOut(BaseModel):
             currency_code     = row[6],
             sender_username   = row[13],
             receiver_username = row[14],
-            is_accepted       = bool(row[8]),
+            is_accepted       = row[8],
             created_at        = row[10],
         )
+
+class ListTransactions(BaseModel):
+    transactions: list[TransactionInfo]
+    total_count: int
+    total_pages: int
+    current_page: int
+    page: int
+    page_size: int

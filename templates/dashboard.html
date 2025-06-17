@@ -61,7 +61,7 @@
                             <div>
                                 <div><strong>{{ transaction.name }}</strong></div>
                                 <div class="transaction-amount negative" style="font-size: 0.8rem;">
-                                    Declined</div>
+                                    Outgoing Declined</div>
                                 <div style="color: #666; font-size: 0.7rem;">{{ transaction.created_at }}</div>
                             </div>
                             <div class="transaction-amount negative">+{{ "%.2f"|format(transaction.original_amount) }}
@@ -71,7 +71,7 @@
                             </div>
 
                             <!-- Incoming and not confirmed case -->
-                            {% elif user.id != transaction.sender_id and not transaction.is_accepted %}
+                            {% elif user.id != transaction.sender_id and transaction.is_accepted == 0 %}
                             <div>
                                 <div><strong>{{ transaction.name }}</strong></div>
                                 <div class="transaction-amount pending" style="font-size: 0.8rem;">
@@ -84,7 +84,7 @@
                             </div>
 
                             <!-- Incoming and confirmed case -->
-                            {% elif user.id != transaction.sender_id and transaction.is_accepted %}
+                            {% elif user.id != transaction.sender_id and transaction.is_accepted == 1 %}
                             <div>
                                 <div><strong>{{ transaction.name }}</strong></div>
                                 <div class="transaction-amount positive" style="font-size: 0.8rem;">
@@ -95,6 +95,33 @@
                                 transaction.currency_code
                                 }}
                             </div>
+
+                            <!-- Incoming and declined case -->
+                            {% elif user.id != transaction.sender_id and transaction.is_accepted == -1 %}
+                            <div>
+                                <div><strong>{{ transaction.name }}</strong></div>
+                                <div class="transaction-amount pending" style="font-size: 0.8rem;">
+                                    Incoming Declined</div>
+                                <div style="color: #666; font-size: 0.7rem;">{{ transaction.created_at }}</div>
+                            </div>
+                            <div class="transaction-amount pending">-{{ "%.2f"|format(transaction.amount) }} {{
+                                transaction.currency_code
+                                }}
+                            </div>
+
+                            <!-- Fallback -->
+                            {% else %}
+                            <div>
+                                <div><strong>{{ transaction.name }}</strong></div>
+                                <div class="transaction-amount pending" style="font-size: 0.8rem;">
+                                    Unknown</div>
+                                <div style="color: #666; font-size: 0.7rem;">{{ transaction.created_at }}</div>
+                            </div>
+                            <div class="transaction-amount pending">±{{ "%.2f"|format(transaction.amount) }} {{
+                                transaction.currency_code
+                                }}
+                            </div>
+
                             {% endif %}
                         </div>
                         {% endfor %}
