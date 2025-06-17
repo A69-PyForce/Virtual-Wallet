@@ -86,7 +86,7 @@ body {
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid #ffffff4d;
     transition: all 0.2s ease;
 }
 
@@ -139,7 +139,7 @@ body {
     background: #667eea;
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5em 1.5em;
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
@@ -154,7 +154,6 @@ body {
     background: #38c172;
     color: #fff;
     border: none;
-    padding: 0.5em 1.5em;
     border-radius: 5px;
     cursor: pointer;
     transition: background 0.2s;
@@ -287,12 +286,23 @@ body {
 
 .contact-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     padding: 1rem;
     border: 1px solid #eee;
-    border-radius: 5px;
-    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 0.6rem;
+    transition: background-color 0.2s;
+}
+
+.contact-item:hover {
+    background-color: #f8f9fa;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .user-info {
@@ -308,19 +318,34 @@ body {
 }
 
 .badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.3em 0.8em;
+    border-radius: 999px;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: 0 1px 3px rgba(70, 110, 200, 0.07);
 }
 
 .badge-admin {
-    background: #dc3545;
+    background-color: #6f42c1;
     color: white;
 }
 
 .badge-verified {
     background: #28a745;
+    color: white;
+}
+
+.badge-unverified {
+    background: orange;
+    color: white;
+}
+
+.badge-blocked {
+    background: red;
     color: white;
 }
 
@@ -401,6 +426,26 @@ body {
     padding-right: 4rem;
 }
 
+.user-item {
+    background-color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(70, 110, 200, 0.08);
+    margin-bottom: 1.2rem;
+    border: none;
+    padding: 1.2rem 1.5rem;
+    transition: box-shadow 0.2s, transform 0.2s, background-color 0.2s;
+}
+
+.user-item:hover {
+    box-shadow: 0 4px 16px rgba(70, 110, 200, 0.13);
+    transform: translateY(-1px) scale(1.005);
+    background-color: #f7f9ff;
+}
+
+
 @media (max-width: 768px) {
     .header .container {
         flex-direction: column;
@@ -430,6 +475,26 @@ body {
 
     .user-info {
         grid-template-columns: 1fr;
+    }
+
+    .error-content {
+        padding: 2rem;
+    }
+
+    .error-title {
+        font-size: 1.75rem;
+    }
+
+    .error-message {
+        font-size: 1rem;
+    }
+
+    .error-actions {
+        flex-direction: column;
+    }
+
+    .error-actions .btn {
+        width: 100%;
     }
 }
 
@@ -610,28 +675,6 @@ body {
     min-width: 120px;
 }
 
-@media (max-width: 768px) {
-    .error-content {
-        padding: 2rem;
-    }
-
-    .error-title {
-        font-size: 1.75rem;
-    }
-
-    .error-message {
-        font-size: 1rem;
-    }
-
-    .error-actions {
-        flex-direction: column;
-    }
-
-    .error-actions .btn {
-        width: 100%;
-    }
-}
-
 .transaction-actions {
     margin-top: 0.5rem;
     display: flex;
@@ -660,16 +703,18 @@ body {
 }
 
 .form {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    margin: 0 auto;
-    max-width: 450px;
-    padding: 2em;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 32px rgba(70, 110, 200, 0.06);
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    outline: none;
 }
 
 input[type="text"],

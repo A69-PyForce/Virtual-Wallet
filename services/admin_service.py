@@ -6,7 +6,7 @@ from data.models import UserSummary, UserFilterParams, AdminTransactionFilterPar
 
 def get_all_users(filters: UserFilterParams) -> list[UserSummary]:
     sql = """
-        SELECT id, username, email, phone_number, is_blocked, is_verified, is_admin, created_at
+        SELECT id, username, email, phone_number, is_blocked, is_verified, is_admin, created_at, avatar_url
         FROM Users
         WHERE 1=1 
 
@@ -37,7 +37,7 @@ def set_user_blocked_state(user_id: int, blocked: bool) -> bool:
     sql = "UPDATE Users SET is_blocked = ? WHERE id = ?"
     return update_query(sql, (int(blocked), user_id))
 
-def get_all_transactions(filters: AdminTransactionFilterParams) -> list[TransactionOut]:
+def get_all_transactions(filters: AdminTransactionFilterParams) -> list[AdminTransactionOut]:
     sql = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id, t.amount,
           c.code AS currency_code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, t.original_amount, t.original_currency_code,
@@ -98,7 +98,7 @@ def deny_transaction(transaction_id: int) -> bool:
     if not update_sender:
         return False
 
-    return update_query("DELETE FROM Transactions WHERE id = ?", (transaction_id,))
+    return update_query("UPDATE Transactions SET is_accepted = -1 WHERE id = ? AND is_accepted = 0", (transaction_id,))
 
 def count_users(filters: UserFilterParams) -> int:
     sql = "SELECT COUNT(*) FROM Users WHERE 1=1"

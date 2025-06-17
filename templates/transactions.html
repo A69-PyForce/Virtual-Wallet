@@ -92,14 +92,6 @@
       font-weight: 500;
     }
 
-    .form-control {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-
     .form-select {
       width: 100%;
       padding: 0.75rem;
@@ -270,13 +262,6 @@
       gap: 0.5rem;
     }
 
-    .form-control {
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 0.9rem;
-    }
-
     .btn-sm {
       padding: 0.5rem 0.5rem;
       font-size: 0.875rem;
@@ -299,7 +284,7 @@
       <form method="get" class="filter-form">
         <div class="filter-group">
           <label for="category">Category</label>
-          <select name="category_id" id="category" class="form-control">
+          <select name="category_id" id="category" class="form">
             <option value="">All Categories</option>
             {% for category in categories %}
             <option value="{{ category.id }}" {% if category.id|string==request.query_params.get('category_id', '' )
@@ -312,7 +297,7 @@
 
         <div class="filter-group">
           <label for="status">Status</label>
-          <select name="status" id="status" class="form-control">
+          <select name="status" id="status" class="form">
             <option value="">All Statuses</option>
             <option value="pending" {% if request.query_params.get('status')=='pending' %}selected{% endif %}>Pending
             </option>
@@ -340,13 +325,13 @@
 
         <div class="filter-group">
           <label for="start_date">Start Date</label>
-          <input type="date" name="start_date" id="start_date" class="form-control"
+          <input type="date" name="start_date" id="start_date" class="form"
             value="{{ request.query_params.get('start_date', '') }}">
         </div>
 
         <div class="filter-group">
           <label for="end_date">End Date</label>
-          <input type="date" name="end_date" id="end_date" class="form-control"
+          <input type="date" name="end_date" id="end_date" class="form"
             value="{{ request.query_params.get('end_date', '') }}">
         </div>
 
