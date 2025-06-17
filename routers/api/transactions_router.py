@@ -67,10 +67,8 @@ async def decline_tran(transaction_id: int, u_token: str = Header()):
 
 @api_transactions_router.get("/history", response_model=list[TransactionOut])
 def get_transaction_history(
-    # automatically parses query params like ?start_date=... into a validated Pydantic object
     filters: TransactionFilterParams = Depends(),
-    u_token: str = Header()
-):
+    u_token: str = Header()):
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:

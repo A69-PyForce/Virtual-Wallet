@@ -287,15 +287,15 @@ class TransactionFilterParams(BaseModel):
     - Filters by date range, direction (incoming/outgoing), and category
     - Supports sorting and pagination
     """
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    direction: Optional[Literal["incoming", "outgoing"]] = None
-    category_id: Optional[int] = None
+    start_date: date | None = None
+    end_date: date | None = None
+    direction: Literal["incoming", "outgoing"] | None = None
+    category_id: int | None = None
     sort_by: Optional[Literal["date", "amount"]] = "date"
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
     offset: int = Field(default=0, ge=0)
-    status: Optional[Literal["pending", "confirmed", "declined"]] = None
+    status: Literal["pending", "confirmed", "declined"] | None = None
 
 class UserSummary(BaseModel):
     id: int
@@ -305,6 +305,7 @@ class UserSummary(BaseModel):
     is_blocked: bool
     is_verified: bool
     is_admin: bool
+    created_at: datetime
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -315,21 +316,23 @@ class UserSummary(BaseModel):
             phone_number=row[3],
             is_blocked=bool(row[4]),
             is_verified=bool(row[5]),
-            is_admin=bool(row[6])
+            is_admin=bool(row[6]),
+            created_at=row[7]
         )
 
 class UserFilterParams(BaseModel):
-    search: Optional[str] = None
-    is_verified: Optional[bool] = None
+    search: str | None = None
+    is_verified: bool | None = None
     limit: int = Field(default=20, ge=1)
     offset: int = Field(default=0, ge=0)
 
 class AdminTransactionFilterParams(BaseModel):
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    sender_id: Optional[int] = None
-    receiver_id: Optional[int] = None
-    direction: Optional[Literal["incoming", "outgoing"]] = None
+    start_date: date | None = None
+    end_date: date | None = None
+    sender_id: int | None = None
+    receiver_id: int | None = None
+    user_id: int | None = None
+    direction: Literal["incoming", "outgoing", "all"] | None = None
     sort_by: Optional[Literal["date", "amount"]] = "date"
     sort_order: Optional[Literal["asc", "desc"]] = "desc"
     limit: int = Field(default=20, ge=1)
@@ -343,3 +346,26 @@ class TransactionTemplate(BaseModel):
     category_id: int
     name: str
     description: str
+
+class AdminTransactionOut(BaseModel):
+    id: int
+    name: str
+    amount: float
+    currency_code: str
+    sender_username: Optional[str]
+    receiver_username: Optional[str]
+    is_accepted: bool
+    created_at: datetime
+
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id                = row[0],
+            name              = row[1],
+            amount            = row[5],
+            currency_code     = row[6],
+            sender_username   = row[13],
+            receiver_username = row[14],
+            is_accepted       = bool(row[8]),
+            created_at        = row[10],
+        )
