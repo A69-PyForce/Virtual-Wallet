@@ -1,5 +1,8 @@
 import os
 import cloudinary
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Load Claudinary config from .env for the user avatar and category images. |
 CLDNR_CONFIG = {
