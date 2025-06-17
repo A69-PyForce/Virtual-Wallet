@@ -1,10 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  {% from 'macros.html' import load_navbar, load_footer %}
+  <title>Admin - Users</title>
+
+  <style>
+    .users-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s;
+    }
+    .user-item:hover { background-color: #f9f9f9; }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+    }
+    .badge-admin {
+      background-color: #6f42c1;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+    .pagination a {
+      text-decoration: none;
+    }
+    .pagination button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pagination button:hover {
+      background: #f0f0f0;
+    }
+    .pagination button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+
+    h2, h3 { margin-bottom: 1rem; }
+  </style>
 </head>
 <body>
+  {{ load_navbar(get_user(request)) }}
 
+  <div class="users-container">
+    <h2>Users</h2>
+
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <form method="get" action="/admin/users" class="mb-3 d-flex">
+      <input
+        type="text"
+        name="search"
+        class="form-control me-2"
+        placeholder="Search username, email or phone…"
+        value="{{ request.query_params.get('search','') }}"
+      />
+      <button class="btn btn-outline-primary">Search</button>
+    </form>
+
+    <div class="card">
+      <h3>All Registered Users</h3>
+
+      {% if users %}
+        {% for user in users %}
+          <div class="user-item">
+            <div class="user-info">
+              <img
+                class="user-avatar"
+                src="{{ user.avatar_url or '/static/images/default_user_avatar.png' }}"
+                alt="User Avatar"
+              />
+              <div>
+                <div>
+                  <strong>{{ user.username }}</strong>
+                  {% if user.is_admin %}
+                    <span class="badge-admin">Admin</span>
+                  {% endif %}
+                </div>
+                <div style="color: #666;">{{ user.email }}</div>
+                <div style="color: #888; font-size: 0.9em;">
+                  {% if user.is_verified %}✅ Verified{% else %}❌ Unverified{% endif %} |
+                  {% if user.is_blocked %}🚫 Blocked{% else %}🟢 OK{% endif %} |
+                  Created: {{ user.created_at.strftime("%Y-%m-%d") }}
+                </div>
+                {% if user.phone_number %}
+                  <div style="color: #666;">📞 {{ user.phone_number }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="btn-group">
+              {% if not user.is_verified %}
+                <form
+                  action="/admin/users/{{ user.id }}/approve"
+                  method="post"
+                >
+                  <button class="btn btn-primary">Approve</button>
+                </form>
+              {% endif %}
+
+              <form
+                action="/admin/users/{{ user.id }}/{{ 'unblock' if user.is_blocked else 'block' }}"
+                method="post"
+              >
+                {% if user.is_blocked %}
+                  <button class="btn btn-success">Unblock</button>
+                {% else %}
+                  <button class="btn btn-danger">Block</button>
+                {% endif %}
+              </form>
+
+              <form action="/admin/users/{{ user.username }}/view?direction=incoming" method="get">
+                <button class="btn btn-secondary">View</button>
+              </form>
+
+            </div>
+          </div>
+        {% endfor %}
+
+        {# --- here’s the new pagination block --- #}
+        {% if total_pages and total_pages > 1 %}
+          <div class="pagination">
+            {% if current_page > 1 %}
+              <a href="?page={{ current_page-1 }}{% if request.query_params.get('search') %}&search={{ request.query_params.get('search') }}{% endif %}">
+                <button>&laquo; Prev</button>
+              </a>
+            {% endif %}
+
+            {% for p in range(1, total_pages+1) %}
+              <a href="?page={{ p }}{% if request.query_params.get('search') %}&search={{ request.query_params.get('search') }}{% endif %}">
+                <button class="{{ 'active' if p==current_page else '' }}">{{ p }}</button>
+              </a>
+            {% endfor %}
+
+            {% if current_page < total_pages %}
+              <a href="?page={{ current_page+1 }}{% if request.query_params.get('search') %}&search={{ request.query_params.get('search') }}{% endif %}">
+                <button>Next &raquo;</button>
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      {% else %}
+        <p>No users found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {{ load_footer() }}
 </body>
 </html>

@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import Optional
-
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from common import template_config, authenticate
-from common.authenticate import get_user_if_token, get_user_or_raise_401
+from common.authenticate import get_user_or_raise_401
 from services.recurring_service import create_recurring_for_user
 from services.transaction_categories_service import get_all_categories_for_user
 from services.transactions_service import create_transaction, get_user_transaction_history, get_transactions_for_user, \
