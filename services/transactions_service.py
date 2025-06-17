@@ -36,7 +36,7 @@ def get_transactions_for_user(user_id: int, limit: int | None = None) -> UserTra
         sql += " LIMIT ?"
         sql_params.append(limit)
         
-    rows = read_query(sql=sql, sql_params=sql_params)
+    rows = read_query(sql=sql, sql_params=tuple(sql_params))
     return UserTransactionsResponse(transactions=[TransactionOut.from_query(row) for row in rows])
 
 async def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:

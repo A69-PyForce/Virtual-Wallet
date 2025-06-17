@@ -3,6 +3,7 @@ from starlette.responses import RedirectResponse
 
 from common import template_config
 from common.authenticate import get_user_or_raise_401
+from data.models import UserFilterParams
 from routers.api.admin_router import get_all_users
 from services.admin_service import set_user_blocked_state, deny_transaction
 
@@ -15,9 +16,10 @@ def list_users(request: Request):
     admin = get_user_or_raise_401(token)
     if not admin.is_admin:
         return RedirectResponse("/", status_code=302)
-    users = get_all_users({})
+    filters = UserFilterParams()
+    users = get_all_users(filters)
     return templates.TemplateResponse(
-        "admin_users.html",
+        "admin.html",
         {"request": request, "user": admin, "users": users}
     )
 
