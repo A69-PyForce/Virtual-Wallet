@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  {% from 'macros.html' import load_navbar, load_footer %}
+  <title>Manage Cards</title>
+</head>
+<body>
+  {{ load_navbar(user) }}
+
+  <div class="container my-5">
+    <h2 class="text-center mb-4">Manage Your Bank Cards</h2>
+
+    {% if error_message %}
+      <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+
+    <div class="bank-cards-container">
+      {% for card in cards %}
+        <div class="bank-card">
+          {% if card.image_url %}
+            <div class="card-image" style="height:140px; overflow:hidden; border-radius:8px; margin-bottom:1rem;">
+              <img src="{{ card.image_url }}" alt="Card Image" style="width:100%; object-fit:cover;">
+            </div>
+          {% endif %}
+
+          <h3 class="mb-2">{{ card.nickname or "Unnamed Card" }}</h3>
+          <div class="card-info mb-3">
+            <div><strong>Type:</strong> {{ card.type }}</div>
+            <div>
+              <strong>Status:</strong>
+              {% if card.is_deactivated %}
+                <span class="badge badge-danger">Deactivated</span>
+              {% else %}
+                <span class="badge badge-active">Active</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <form method="post" action="/users/cards/{{ card.id }}/deposit" class="form-row">
+            <input type="number" name="amount" placeholder="Deposit" step="0.01" required>
+            <button class="btn btn-success btn-sm">Deposit</button>
+          </form>
+
+          <form method="post" action="/users/cards/{{ card.id }}/withdraw" class="form-row">
+            <input type="number" name="amount" placeholder="Withdraw" step="0.01" required>
+            <button class="btn btn-danger btn-sm">Withdraw</button>
+          </form>
+
+          <form method="post" action="/users/cards/{{ card.id }}/nickname" class="form-row">
+            <input type="text" name="nickname" placeholder="New Nickname" maxlength="40">
+            <button class="btn btn-sm">Rename</button>
+          </form>
+
+          <form method="post" action="/users/cards/{{ card.id }}/image" class="form-row">
+            <input type="text" name="image_url" placeholder="New Image URL">
+            <button class="btn btn-sm">Change Image</button>
+          </form>
+
+          <div class="mt-3 text-center">
+            <form method="post" action="/users/cards/{{ card.id }}/delete">
+              <button class="btn btn-danger btn-sm">Delete Card</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-center mt-4">
+      <form action="/users/dashboard" method="get">
+        <button class="btn btn-secondary">⬅ Back to Dashboard</button>
+      </form>
+    </div>
+  </div>
+
+  {{ load_footer() }}
+</body>
+</html>
