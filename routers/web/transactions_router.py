@@ -79,10 +79,10 @@ async def process_new_transaction(
             success = "Transaction and recurring rule successfully created!"
         else:
             success = "Transaction successfully created!"
-            
+
     except ValidationError as ve:
         error = f"{ve.errors()[0]["msg"]}"
-   
+
     except Exception:
         print(traceback.format_exc())
         error = "An internal issue occured while creating this transaction. Please try again later."
@@ -114,11 +114,11 @@ def view_transaction_history(
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
-    
+
     categories = get_all_categories_for_user(user.id)
-    
+
     category_id_int = int(category_id) if category_id and category_id.strip() else None
-    
+
     sort_by_mapping = {
         "created_at": "date",
         "date": "date",
@@ -126,7 +126,7 @@ def view_transaction_history(
         "name": "date"
     }
     mapped_sort_by = sort_by_mapping.get(sort_by, "date")
-    
+
     filters = TransactionFilterParams(
         status=status if status else None,
         direction=direction if direction else None,
@@ -138,14 +138,14 @@ def view_transaction_history(
         limit=page_size,
         offset=(page - 1) * page_size
     )
-    
+
     transactions_data = get_user_transaction_history(user, filters)
 
     if page > transactions_data.total_pages:
         page = transactions_data.total_pages
     if page < 1:
         page = 1
-    
+
     return templates.TemplateResponse(
         "transactions.html",
         {
@@ -199,11 +199,11 @@ def view_transaction(transaction_id: int, request: Request):
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
-    
+
     transaction = get_transaction_by_id(transaction_id, user)
     if not transaction:
         raise HTTPException(404, "Transaction not found.")
-    
+
     return templates.TemplateResponse(
         "transaction_details.html",
         {

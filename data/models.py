@@ -266,7 +266,7 @@ class TransactionInfo(BaseModel):
     sender_username: str
     receiver_username: str
     category_image_url: str | None
-    
+
     @classmethod
     def from_query(cls, row: tuple):
         return cls(
@@ -390,6 +390,14 @@ class TransactionTemplate(BaseModel):
     category_id: int
     name: str
     description: str
+
+class ListTransactions(BaseModel):
+    transactions: list[TransactionInfo]
+    total_count: int
+    total_pages: int
+    current_page: int
+    page: int
+    page_size: int
 
 class AdminTransactionOut(BaseModel):
     id: int
