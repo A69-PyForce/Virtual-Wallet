@@ -7,6 +7,7 @@ from data.models import *
 import cloudinary.uploader
 from pydantic import ValidationError
 from utils.user_auth_token_utils import *
+from config.env_loader import CLDNR_CONFIG
 from utils.regex_verifictaion_utils import *
 import services.users_service as users_service
 from fastapi.responses import RedirectResponse
@@ -17,21 +18,6 @@ from fastapi import APIRouter, Request, Form, File, UploadFile
 # Load currencies from cache file
 with open('currencies_cache.json', 'r') as f:
     currencies = json.load(f)
-    
-# Load Claudinary config from .env for the user avatar and category images. |
-CLDNR_CONFIG = {
-    "cldnr_cloud_name": os.getenv("CLDNR_CLOUD_NAME"),
-    "cldnr_api_key": os.getenv("CLDNR_API_KEY"),
-    "cldnr_api_secret": os.getenv("CLDNR_API_SECRET")
-}
-if all(CLDNR_CONFIG.values()) != None:
-    cloudinary.config(
-        cloud_name=CLDNR_CONFIG["cldnr_cloud_name"],
-        api_key=CLDNR_CONFIG["cldnr_api_key"],
-        api_secret=CLDNR_CONFIG["cldnr_api_secret"]
-    )
-else:
-    CLDNR_CONFIG = None
 
 web_users_router = APIRouter(prefix='/users')
 templates = template_config.CustomJinja2Templates(directory='templates')

@@ -220,14 +220,13 @@ class TransactionOut(BaseModel):
     amount: float
     currency_code: str
     category_id: int
-    is_accepted: bool
+    is_accepted: int
     is_recurring: bool
     created_at: datetime
-    original_amount: float | None = None
-    original_currency_code: str | None = None
-    category_name: str | None = None
-    receiver_name: str | None = None
-
+    original_amount: float
+    original_currency_code: str
+    category_name: str
+    receiver_name: str
 
     @classmethod
     def from_query(cls, row: tuple):
@@ -240,13 +239,56 @@ class TransactionOut(BaseModel):
             amount=row[5],
             currency_code=row[6],
             category_id=row[7],
-            is_accepted=bool(row[8]),
+            is_accepted=row[8],
             is_recurring=bool(row[9]),
             created_at=row[10],
             original_amount=row[11],
             original_currency_code=row[12],
             category_name=row[13],
             receiver_name=row[14])
+
+# Used in the GET transactions/{id} router/service
+class TransactionInfo(BaseModel):
+    id: int
+    name: str
+    description: str
+    sender_id: int
+    receiver_id: int
+    amount: float
+    currency_code: str
+    category_id: int
+    is_accepted: int
+    is_recurring: bool
+    created_at: datetime
+    original_amount: float
+    original_currency_code: str
+    category_name: str
+    sender_username: str
+    receiver_username: str
+    category_image_url: str | None
+
+    @classmethod
+    def from_query(cls, row: tuple):
+        return cls(
+            id=row[0],
+            name=row[1],
+            description=row[2],
+            sender_id=row[3],
+            receiver_id=row[4],
+            amount=row[5],
+            currency_code=row[6],
+            category_id=row[7],
+            is_accepted=row[8],
+            is_recurring=bool(row[9]),
+            created_at=row[10],
+            original_amount=row[11],
+            original_currency_code=row[12],
+            category_name=row[13],
+            sender_username=row[14],
+            receiver_username=row[15],
+            category_image_url=row[16]
+        )
+
 
 class UserTransactionsResponse(BaseModel):
     transactions: list[TransactionOut]
@@ -346,6 +388,14 @@ class TransactionTemplate(BaseModel):
     category_id: int
     name: str
     description: str
+
+class ListTransactions(BaseModel):
+    transactions: list[TransactionInfo]
+    total_count: int
+    total_pages: int
+    current_page: int
+    page: int
+    page_size: int
 
 class AdminTransactionOut(BaseModel):
     id: int

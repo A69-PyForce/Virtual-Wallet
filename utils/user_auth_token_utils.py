@@ -1,12 +1,10 @@
 from datetime import datetime, timedelta, timezone
+from config.env_loader import JWT_ENCRYPT_KEY
 from jose import ExpiredSignatureError, jwt
 from data.models import UserTokenInfo
 from jose import jwt
 import traceback
 import os
-
-# Load environment variables from .env file
-_JWT_ENCRYPT_KEY = os.getenv("JWT_ENCRYPT_KEY")
 
 def encode_u_token(user: UserTokenInfo, expires_in_minutes: int = 10) -> str | None:
     """
@@ -26,7 +24,7 @@ def encode_u_token(user: UserTokenInfo, expires_in_minutes: int = 10) -> str | N
             "username": user.username,
             "exp": int(expire.timestamp())
         }
-        return jwt.encode(payload, _JWT_ENCRYPT_KEY)
+        return jwt.encode(payload, JWT_ENCRYPT_KEY)
     
     except Exception:
         print(traceback.format_exc())
@@ -44,7 +42,7 @@ def decode_u_token(u_token: str) -> dict | None:
         or None if the u_token has expired or decoding fails (will print the traceback).
     """
     try:
-        return jwt.decode(u_token, _JWT_ENCRYPT_KEY)
+        return jwt.decode(u_token, JWT_ENCRYPT_KEY)
     
     except ExpiredSignatureError:
         return None

@@ -2,18 +2,16 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from cryptography.fernet import Fernet
+from config.env_loader import BANK_CARDS_ENCRYPT_KEY
 from data.models import BankCardEncryptInfo
+from cryptography.fernet import Fernet
 from datetime import datetime
 import traceback
-import os
 
-# Get encrypt key from .env file
-_ENCRYPT_KEY = os.getenv("DB_BANK_CARDS_ENCRYPT_KEY")
-if not _ENCRYPT_KEY: raise ValueError("Bank Cards encryption key missing.")
+if not BANK_CARDS_ENCRYPT_KEY: raise ValueError("Bank Cards encryption key missing.")
 
 # Create cipher used for encrypt/decrypt
-cipher = Fernet(_ENCRYPT_KEY)
+cipher = Fernet(BANK_CARDS_ENCRYPT_KEY)
 
 # Card data separator
 _SEP = '|'

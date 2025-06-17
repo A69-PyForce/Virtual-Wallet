@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import RedirectResponse
 from starlette.status import HTTP_302_FOUND

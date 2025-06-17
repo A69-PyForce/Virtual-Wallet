@@ -1,49 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Edit Category</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    {% from 'macros.html' import load_navbar, load_footer %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ 'Edit' if category else 'New' }} Category</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  {% from 'macros.html' import load_navbar, load_footer %}
+  <style>
+    .edit-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+    }
+
+    .edit-form {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-header {
+      margin-bottom: 2rem;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+    }
+
+    .image-preview {
+      width: 240px;
+      height: 240px;
+      border-radius: 32px;
+      margin: 1rem 0;
+      object-fit: cover;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
+
 <body>
   {{ load_navbar(get_user(request)) }}
 
-  <div class="container">
-    {% if category %}
-      <h2>Edit Category</h2>
-      <form action="/categories/{{ category.id }}/edit" method="post" class="form">
-    {% else %}
-      <h2>Add New Category</h2>
-      <form action="/categories/new" method="post" class="form">
-    {% endif %}
+  <div class="edit-container">
+    <div class="edit-form">
+      <h2 class="form-header">{{ 'Edit' if category else 'New' }} Category</h2>
 
-      <div class="form-group">
-        <label for="name">Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          required
-          value="{{ category.name if category else '' }}">
-      </div>
+      {% if category %}
+      <form action="/categories/{{ category.id }}/edit" method="post" enctype="multipart/form-data">
+        {% else %}
+        <form action="/categories/new" method="post" enctype="multipart/form-data">
+          {% endif %}
 
-      <div class="form-group">
-        <label for="image_url">Image URL (optional)</label>
-        <input
-          type="text"
-          id="image_url"
-          name="image_url"
-          value="{{ category.image_url if category else '' }}">
-      </div>
+          <div class="form-group">
+            <label for="image">Category Image</label>
+            <img src="{{ category.image_url or '/static/images/default_category_image.png' }}"
+              alt="{{ category.category_name }}" class="image-preview">
+            <input type="file" id="image" name="file" accept="image/*" onchange="previewImage(this)">
+          </div>
 
-      <button type="submit" class="btn">
-        {{ 'Save Changes' if category else 'Add Category' }}
-      </button>
-      <a href="/categories" class="btn">Back</a>
-    </form>
-</div>
+          <div class="form-group">
+            <label for="name">Category Name</label>
+            <input type="text" id="name" name="name" required value="{{ category.name if category else '' }}"
+              placeholder="Enter category name">
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="btn btn-primary">
+              {{ 'Save Changes' if category else 'Create Category' }}
+            </button>
+            <a href="/categories" class="btn btn-secondary" style="text-decoration: none;">Cancel</a>
+          </div>
+        </form>
+    </div>
+  </div>
+
+  <script>
+    function previewImage(input) {
+      const preview = document.getElementById('imagePreview');
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+      } else {
+        preview.src = '';
+        preview.style.display = 'flex';
+        preview.textContent = 'No Image';
+      }
+    }
+  </script>
 
   {{ load_footer() }}
 </body>
+
 </html>

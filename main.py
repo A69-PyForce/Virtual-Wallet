@@ -3,6 +3,7 @@ from common.error_handlers import register_error_handlers
 from utils.currencies_utils import dump_all_currencies
 from recurring_scheduler import process_due_recurring
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi import FastAPI
 import uvicorn
 
@@ -27,6 +28,9 @@ from routers.web.transactions_router import web_transactions_router
 # FastAPI app
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse("static/images/favicon.ico")
 
 # API Routers
 app.include_router(api_users_router, tags=["API", "Users"])
@@ -46,18 +50,15 @@ app.include_router(web_transactions_router, tags=["WEB", "Transactions"])
 app.include_router(web_transactions_categories_router, tags=["WEB", "Transaction Categories"])
 app.include_router(web_recurring_router, tags=["WEB", "Recurring Transaction"])
 
-
 # Error handlers
 register_error_handlers(app)
 
+@app.on_event("startup")
+async def start_recurring_scheduler():
+    asyncio.create_task(process_due_recurring())
+
 # Run file as main
 if __name__ == "__main__":
-    
-    # Recurring transactions processor
-    asyncio.run(process_due_recurring())
-    
     # Uncomment on first startup to cache currencies and also dump them in database
     dump_all_currencies()
-    
-    # Start server with uvicorn
     uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)

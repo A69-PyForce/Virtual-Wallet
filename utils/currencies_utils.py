@@ -1,3 +1,4 @@
+from config.env_loader import CURRENCIES_CACHE_FILE, EXCHANGE_RATE_API_KEY
 import services.currencies_service as currencies_service
 from pydantic import BaseModel, StringConstraints
 from mariadb import IntegrityError
@@ -9,28 +10,24 @@ import os
 
 from data.database import read_query
 
-
 # Custom exception for this file
 class CurrenciesUtils(Exception):
     pass
+
+if not EXCHANGE_RATE_API_KEY:
+    raise CurrenciesUtils("Exchange Rate API Key not found.")
 
 # Currency info model for writing or getting from db
 class CurrencyInfo(BaseModel):
     code: Annotated[str, StringConstraints(min_length=3, max_length=3)]
     name: Annotated[str, StringConstraints(min_length=1, max_length=64)]
 
-_EXCHANGE_RATE_API_KEY = os.getenv("EXCHANGE_RATE_API_KEY")
-if not _EXCHANGE_RATE_API_KEY:
-    raise CurrenciesUtils("Exchange Rate API Key not found.")
-
-CACHE_FILE = "currencies_cache.json"
-
 async def convert_currency(amount: int|float, from_currency: str, to_currency: str) -> float:
     if from_currency == to_currency: # Return same amount if currencies are also the same
         return amount
     
     # URL for currency exchange rate conversion thing
-    URL = f"https://v6.exchangerate-api.com/v6/{_EXCHANGE_RATE_API_KEY}/pair/{from_currency}/{to_currency}/{amount}"
+    URL = f"https://v6.exchangerate-api.com/v6/{EXCHANGE_RATE_API_KEY}/pair/{from_currency}/{to_currency}/{amount}"
     async with httpx.AsyncClient() as client:
         response = await client.get(URL)
         response.raise_for_status() # Raise error if occured in the external API
@@ -45,15 +42,15 @@ def cache_all_currencies():
     try:
         # Try to read cached json
         # Check if the cache file exists and is non-empty
-        if os.path.exists(CACHE_FILE) and os.path.getsize(CACHE_FILE) > 0:
-            with open(CACHE_FILE, "r") as f:
+        if os.path.exists(CURRENCIES_CACHE_FILE) and os.path.getsize(CURRENCIES_CACHE_FILE) > 0:
+            with open(CURRENCIES_CACHE_FILE, "r") as f:
                 ALL_CURRENCIES = tuple(json.load(f))
                 
-            print(f"[INFO / CURRENCIES UTILS] Loaded currency codes from {CACHE_FILE}.")
+            print(f"[INFO / CURRENCIES UTILS] Loaded currency codes from {CURRENCIES_CACHE_FILE}.")
         
         # Else fetch data from API and create the cache file
         else:
-            URL = f"https://v6.exchangerate-api.com/v6/{_EXCHANGE_RATE_API_KEY}/codes"
+            URL = f"https://v6.exchangerate-api.com/v6/{EXCHANGE_RATE_API_KEY}/codes"
             with httpx.Client() as client:
                 
                 # Send request to API and get supported_codes from the response
@@ -63,10 +60,10 @@ def cache_all_currencies():
                 ALL_CURRENCIES = (pair for pair in data["supported_codes"])
                 
                 # Save to cache (json file)
-                with open(CACHE_FILE, "w") as f:
+                with open(CURRENCIES_CACHE_FILE, "w") as f:
                     json.dump(list(ALL_CURRENCIES), f)
                     
-            print(f"[INFO / CURRENCIES UTILS] Called API and cached currency codes in {CACHE_FILE}.")
+            print(f"[INFO / CURRENCIES UTILS] Called API and cached currency codes in {CURRENCIES_CACHE_FILE}.")
             
     except Exception:
         print(traceback.format_exc())
@@ -96,7 +93,7 @@ def get_currency_code_by_user_id(user_id: int) -> str | None:
         WHERE u.id = ?""", (user_id,))
     return result[0][0] if result else None
 
-def get_display_transaction(tx, current_user_id):
+def get_display_transaction(tx, current_user_id) -> str:
     if current_user_id == tx.sender_id:
         return f"You sent {tx.original_amount:.2f} {tx.original_currency_code} (converted to {tx.amount:.2f} {tx.currency_code})"
     elif current_user_id == tx.receiver_id:

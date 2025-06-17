@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    {% from "macros.html" import load_navbar, load_footer %}
+    <title>Transaction Details</title>
+
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .transaction-details {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-title {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .back-button {
+            text-decoration: none;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-button:hover {
+            color: #333;
+        }
+
+        .transaction-info {
+            margin-bottom: 2rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .info-value {
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .status-badge.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.declined {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .category-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .category-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .transaction-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .amount-info {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .conversion-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    {{ load_navbar(user) }}
+
+    <div class="container">
+        <div class="transaction-details">
+            <div class="transaction-header">
+                <h1 class="transaction-title">Transaction Details</h1>
+                <a href="/users/transactions/history" class="back-button">← Back to History</a>
+            </div>
+
+            <div class="transaction-info">
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span
+                        class="status-badge {% if transaction.is_accepted == 1 %}success{% elif transaction.is_accepted == 0 %}pending{% else %}declined{% endif %}">
+                        {% if transaction.is_accepted == 1 %}Confirmed{% elif transaction.is_accepted == 0 %}Pending{%
+                        else %}Declined{% endif %}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Date</span>
+                    <span class="info-value">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">{{ transaction.name }}</span>
+                </div>
+
+                {% if transaction.description %}
+                <div class="info-row">
+                    <span class="info-label">Description</span>
+                    <span class="info-value">{{ transaction.description }}</span>
+                </div>
+                {% endif %}
+
+                <div class="info-row">
+                    <span class="info-label">Category</span>
+                    <div class="category-info">
+                        <img src="{{ transaction.category_image or '/static/images/default_category_image.png' }}"
+                            alt="{{ transaction.category_name }}" class="category-image">
+                        <span class="info-value">{{ transaction.category_name }}</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Amount</span>
+                    <div class="info-value">
+                        <div class="amount-info">
+                            {% if user.id != transaction.sender_id %}
+                            {{ "%.2f"|format(transaction.amount) }} {{ transaction.currency_code }}
+                            {% else %}
+                            {{ "%.2f"|format(transaction.original_amount) }} {{ transaction.original_currency_code }}
+                            {% endif %}
+                        </div>
+                        {% if transaction.original_currency_code != transaction.currency_code %}
+                        <div class="conversion-info">
+                            {% if user.id != transaction.sender_id %}
+                            Original: {{ "%.2f"|format(transaction.original_amount) }} {{
+                            transaction.original_currency_code }}
+                            {% else %}
+                            Converted: {{ "%.2f"|format(transaction.amount) }} {{ transaction.currency_code }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Sender</span>
+                    <span class="info-value">{{ transaction.sender_username }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Receiver</span>
+                    <span class="info-value">{{ transaction.receiver_username }}</span>
+                </div>
+
+                {% if transaction.is_recurring %}
+                <div class="info-row">
+                    <span class="info-label">Recurring</span>
+                    <span class="info-value">Yes</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if user.id == transaction.receiver_id and transaction.is_accepted == 0 %}
+            <div class="transaction-actions">
+                <form action="/users/transactions/{{ transaction.id }}/accept" method="post">
+                    <button type="submit" class="btn btn-success">Accept</button>
+                </form>
+                <form action="/users/transactions/{{ transaction.id }}/decline" method="post">
+                    <button type="submit" class="btn btn-danger">Decline</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {{ load_footer() }}
+</body>
+
+</html>

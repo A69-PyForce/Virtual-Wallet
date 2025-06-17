@@ -1,11 +1,10 @@
 from data.database import read_query, insert_query, update_query
 from data.models import TransactionCategoryOut, TransactionCategoryCreate
 
-
 def get_all_categories_for_user(user_id: int) -> list[TransactionCategoryOut]:
     sql = """SELECT id, name, image_url
              FROM TransactionCategories
-             WHERE user_id = ?"""
+             WHERE user_id = ? AND is_deleted = 0"""
     rows = read_query(sql, (user_id,))
     return [TransactionCategoryOut.from_query(row) for row in rows]
 
@@ -13,8 +12,7 @@ def get_category_by_id_for_user(category_id: int, user_id: int) -> TransactionCa
     sql = """
         SELECT id, name, image_url
           FROM TransactionCategories
-         WHERE id = ? AND user_id = ?
-    """
+         WHERE id = ? AND user_id = ? AND is_deleted = 0"""
     rows = read_query(sql, (category_id, user_id))
     if not rows:
         return None
@@ -31,7 +29,7 @@ def create_category_for_user(category: TransactionCategoryCreate, user_id: int):
 
 
 def delete_category_for_user(category_id: int, user_id: int) -> bool:
-    sql = "DELETE FROM TransactionCategories WHERE id = ? AND user_id = ?"
+    sql = "UPDATE TransactionCategories SET is_deleted = 1 WHERE id = ? AND user_id = ?"
     return update_query(sql, (category_id, user_id))
 
 
@@ -45,3 +43,9 @@ def update_category_for_user(category_id: int, user_id: int,
     update_query(sql, (category_data.name, category_data.image_url, category_id, user_id))
 
     return TransactionCategoryOut(id=category_id, name=category_data.name, image_url=category_data.image_url)
+
+def change_category_image_url(category_id: int, avatar_url: str) -> bool:
+    
+    # Query to do the thingie 
+    sql = "UPDATE TransactionCategories SET image_url = ? WHERE id = ?"
+    return insert_query(sql=sql, sql_params=(avatar_url, category_id,)) != 0
