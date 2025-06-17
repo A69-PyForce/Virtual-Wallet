@@ -18,40 +18,40 @@
                     <button class="nav-btn">Home</button>
                 </form>
                 {% if user %}
-                    <form action="/users/dashboard" method="get">
-                        <button class="nav-btn" id="dashboardBtn">Dashboard</button>
-                    </form>
+                <form action="/users/dashboard" method="get">
+                    <button class="nav-btn" id="dashboardBtn">Dashboard</button>
+                </form>
 
-                    <form action="/users/settings" method="get">
-                        <button class="nav-btn" id="settingsBtn">Settings</button>
-                    </form>
+                <form action="/users/settings" method="get">
+                    <button class="nav-btn" id="settingsBtn">Settings</button>
+                </form>
 
-                    <div class="nav-divider"></div>
+                {% if user.is_admin %}
+                <form action="/admin/users" method="get">
+                    <button class="nav-btn" id="adminBtn">Admin Panel</button>
+                </form>
+                {% endif %}
 
-                    {% if user.is_admin %}
-                    <form action="/admin/users" method="get">
-                        <button class="nav-btn" id="adminBtn">Admin Panel</button>
-                    </form>
-                    {% endif %}
+                <div class="nav-divider"></div>
 
-                    <div class="user-profile">
-                        <img class="user-avatar" src="{{ user.avatar_url or '/static/images/default_user_avatar.png' }}"
-                            alt="User Avatar">
-                        <span class="welcome-text">{{user.username}}</span>
-                    </div>
+                <div class="user-profile">
+                    <img class="user-avatar" src="{{ user.avatar_url or '/static/images/default_user_avatar.png' }}"
+                        alt="User Avatar">
+                    <span class="welcome-text">{{user.username}}</span>
+                </div>
 
-                    <form action="/users/logout" method="get">
-                        <button class="nav-btn" id="logoutBtn">Logout</button>
-                    </form>
+                <form action="/users/logout" method="get">
+                    <button class="nav-btn" id="logoutBtn">Logout</button>
+                </form>
 
                 {% else %}
-                    <form action="/users/login" method="get">
-                        <button class="nav-btn" id="loginBtn">Login</button>
-                    </form>
+                <form action="/users/login" method="get">
+                    <button class="nav-btn" id="loginBtn">Login</button>
+                </form>
 
-                    <form action="/users/register" method="get">
-                        <button class="nav-btn" id="registerBtn">Register</button>
-                    </form>
+                <form action="/users/register" method="get">
+                    <button class="nav-btn" id="registerBtn">Register</button>
+                </form>
                 {% endif %}
             </nav>
         </div>

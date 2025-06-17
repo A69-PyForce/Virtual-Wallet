@@ -6,7 +6,7 @@ from jose import jwt
 import traceback
 import os
 
-def encode_u_token(user: UserTokenInfo, expires_in_minutes: int = 10) -> str | None:
+def encode_u_token(user: UserTokenInfo, expires_in_minutes: int = 20) -> str | None:
     """
     Encode a JWT User token from a UserTokenInfo object with a default expiration time of 10 minutes.
 
