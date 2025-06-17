@@ -1,10 +1,17 @@
-from fastapi import APIRouter, Request, Form, HTTPException
-from starlette.responses import RedirectResponse
+import io
+import traceback
+from unicodedata import category
+import cloudinary
+from PIL import Image
+import cloudinary.uploader
 from common import template_config
-from common.authenticate import get_user_if_token, get_user_or_raise_401
+from config.env_loader import CLDNR_CONFIG
+from starlette.responses import RedirectResponse
 from data.models import TransactionCategoryCreate
-from services.transaction_categories_service import get_all_categories_for_user, create_category_for_user, \
-    get_category_by_id_for_user, update_category_for_user, delete_category_for_user
+from common.authenticate import get_user_if_token, get_user_or_raise_401
+from fastapi import APIRouter, Request, Form, HTTPException, UploadFile, File
+from services.transaction_categories_service import change_category_image_url, get_all_categories_for_user, create_category_for_user, \
+    get_category_by_id_for_user, update_category_for_user, delete_category_for_user\
 
 web_transactions_categories_router = APIRouter(prefix='/categories')
 templates = template_config.CustomJinja2Templates(directory='templates')
@@ -27,21 +34,46 @@ def new_category(request: Request):
         return RedirectResponse("/users/login", status_code=302)
     return templates.TemplateResponse(
         "new_category.html",
-        {"request": request, "user": user,"category": None}
+        {"request": request, "user": user, "category": None}
     )
+
 @web_transactions_categories_router.post('/new')
-def create_category(
+async def create_category(
     request: Request,
     name: str = Form(...),
-    image_url: str = Form("")
+    image_url: str = Form(""),
+    file: UploadFile = File(None)
 ):
-
     # enforce auth
     token = request.cookies.get("u-token")
     user = get_user_or_raise_401(token)
 
+    # Handle file upload if present
+    if file and file.filename:
+        try:
+            # Read uploader image
+            image_contents = await file.read()
+            
+            # Process image with Pillow & resize
+            image = Image.open(io.BytesIO(image_contents))
+            resized_image = image.resize((192, 192))
+            
+            # Save resized image to buffer
+            buffer = io.BytesIO()
+            resized_image.save(buffer, format=image.format or "JPEG")
+            buffer.seek(0)
+            
+            # Upload image with Cloudinary and get the generated URL
+            if CLDNR_CONFIG:
+                result = cloudinary.uploader.upload(buffer, folder="virtual-wallet-category-images")
+                image_url = result["secure_url"]
+        except Exception as e:
+            print(f"Error processing image: {str(e)}")
+            print(traceback.format_exc())
+            image_url = None
+
     # normalize optional URL
-    url = image_url.strip()
+    url = image_url.strip() if image_url else None
     if not url or len(url) < 5:
         url = None
 
@@ -63,25 +95,52 @@ def edit_category(request: Request, category_id: int):
     )
 
 @web_transactions_categories_router.post("/{category_id}/edit")
-def update_category(
+async def update_category(
     request: Request,
     category_id: int,
     name: str = Form(...),
-    image_url: str = Form("")
+    file: UploadFile = File(None)
 ):
     token = request.cookies.get("u-token")
     user = get_user_or_raise_401(token)
 
-    url = image_url.strip()
-    if not url or len(url) < 5:
-        url = None
+    # Get current category to preserve existing image_url if no new image is uploaded
+    current_category = get_category_by_id_for_user(category_id, user.id)
+    if not current_category:
+        raise HTTPException(404, "Category not found")
 
-    data = TransactionCategoryCreate(name=name, image_url=url)
+    image_url = current_category.image_url
+
+    # Handle file upload if present
+    if file and file.filename:
+        try:
+            # Read uploader image
+            image_contents = await file.read()
+            
+            # Process image with Pillow & resize
+            image = Image.open(io.BytesIO(image_contents))
+            resized_image = image.resize((192, 192))
+            
+            # Save resized image to buffer
+            buffer = io.BytesIO()
+            resized_image.save(buffer, format=image.format or "JPEG")
+            buffer.seek(0)
+            
+            # Upload image with Cloudinary and get the generated URL
+            if CLDNR_CONFIG:
+                result = cloudinary.uploader.upload(buffer, folder="virtual-wallet-category-images")
+                image_url = result["secure_url"]
+        except Exception as e:
+            print(f"Error processing image: {str(e)}")
+            print(traceback.format_exc())
+            # Keep existing image_url if upload fails
+            image_url = current_category.image_url
+
+    data = TransactionCategoryCreate(name=name, image_url=image_url)
     updated = update_category_for_user(category_id, user.id, data)
     if not updated:
         raise HTTPException(404, "Unsuccessful update.")
     return RedirectResponse("/categories", status_code=303)
-
 
 @web_transactions_categories_router.post("/{category_id}/delete")
 def delete_category(request: Request, category_id: int):

@@ -168,7 +168,8 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     base_query = """
         FROM Transactions t
         JOIN TransactionCategories tc ON t.category_id = tc.id
-        JOIN Users AS u ON t.receiver_id = u.id
+        JOIN Users s ON t.sender_id = s.id
+        JOIN Users r ON t.receiver_id = r.id
         JOIN Currencies c ON t.currency_id = c.id
         WHERE (t.sender_id = ? OR t.receiver_id = ?)
     """
@@ -235,13 +236,14 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
         }[filters.sort_by]
     sort_order = filters.sort_order.upper() if (filters.sort_order and filters.sort_order.upper()
                                                 in ("ASC", "DESC")) else "DESC"
-    
     # Main query for transactions
     query = f"""
-        SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
-               t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, t.original_amount,
-               t.original_currency_code, tc.name AS category_name, u.username AS receiver_username,
-               tc.image_url AS category_image_url
+        SELECT 
+            t.id, t.name, t.description, t.sender_id, t.receiver_id,
+            t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at,
+            t.original_amount, t.original_currency_code, tc.name AS category_name,
+            s.username AS sender_username, r.username AS receiver_username,
+            tc.image_url AS category_image_url
         {base_query}
         ORDER BY {sort_column} {sort_order}
         LIMIT ? OFFSET ?
@@ -249,7 +251,7 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     params += [page_size, offset]
 
     results = read_query(query, tuple(params))
-    transactions = [TransactionOut.from_query(row) for row in results]
+    transactions = [TransactionInfo.from_query(row) for row in results]
     
     return ListTransactions(
         transactions=transactions,

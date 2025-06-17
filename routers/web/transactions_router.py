@@ -138,7 +138,7 @@ def view_transaction_history(
     )
     
     transactions_data = get_user_transaction_history(user, filters)
-    
+    print(transactions_data)
     if page > transactions_data.total_pages:
         page = transactions_data.total_pages
     if page < 1:

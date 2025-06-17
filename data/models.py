@@ -387,7 +387,7 @@ class TransactionTemplate(BaseModel):
     description: str
     
 class ListTransactions(BaseModel):
-    transactions: list[TransactionOut]
+    transactions: list[TransactionInfo]
     total_count: int
     total_pages: int
     current_page: int

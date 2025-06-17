@@ -374,7 +374,7 @@
             <td>{{ transaction.name }}</td>
             <td>
               <div class="category-cell">
-                <img src="{{ transaction.category_image or '/static/images/default_category_image.png' }}"
+                <img src="{{ transaction.category_image_url or '/static/images/default_category_image.png' }}"
                   alt="{{ transaction.category_name }}" class="category-image">
                 <span>{{ transaction.category_name }}</span>
               </div>
