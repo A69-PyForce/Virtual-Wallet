@@ -1,6 +1,7 @@
 from mariadb import IntegrityError
 from data.database import *
 from data.models import *
+from data.models import ListContacts
 
 class ContactsService_Error(BaseException):
     pass
@@ -51,7 +52,20 @@ def remove_contact_from_user(contact: ContactModify, user: UserFromDB):
      # insert_query returns None when the insert happened for some reason.
     return insert_query(sql=sql, sql_params=(user.id, contact_id,)) is None
 
-def get_all_contacts_for_user(user: UserFromDB, page: int = 1, page_size: int = 10):
+def get_contacts_list_for_user(user: UserFromDB) -> list[ContactInfo]:
+    sql = """SELECT u.id, u.username, u.email, u.avatar_url 
+    FROM Users AS u JOIN UserContacts 
+    AS uc WHERE u.id = uc.contact_id 
+    AND user_id = ? 
+    ORDER BY u.username"""
+    
+    contacts = []
+    data = read_query(sql=sql, sql_params=(user.id,))
+    for row in data:
+        contacts.append(ContactInfo(id=row[0], username=row[1], email=row[2], avatar_url=row[3]))
+    return contacts
+
+def get_all_contacts_for_user(user: UserFromDB, page: int = 1, page_size: int = 10) -> ListContacts:
     # First get total count for pagination
     count_sql = """SELECT COUNT(*) 
                   FROM Users AS u JOIN UserContacts AS uc

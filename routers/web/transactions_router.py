@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from common import template_config, authenticate
 from common.authenticate import get_user_if_token, get_user_or_raise_401
 from services.recurring_service import create_recurring_for_user
+from services.contacts_service import get_all_contacts_for_user, get_contacts_list_for_user
 from services.transaction_categories_service import get_all_categories_for_user
 from services.transactions_service import create_transaction, get_user_transaction_history, get_transactions_for_user, \
     confirm_transaction, decline_transaction, get_transaction_by_id
@@ -23,9 +24,10 @@ def serve_new_transaction(request: Request):
     if not user:
         return RedirectResponse("/users/login", status_code=302)
     categories = get_all_categories_for_user(user.id)
+    contacts = get_contacts_list_for_user(user)
     return templates.TemplateResponse(request=request, name="new_transaction.html",
                                       context={"request": request, "user": user, "categories": categories,
-                                          "error": None, "success": None})
+                                          "contacts": contacts, "error": None, "success": None})
 
 # POST: Process the form
 @web_transactions_router.post('/new')
@@ -138,7 +140,7 @@ def view_transaction_history(
     )
     
     transactions_data = get_user_transaction_history(user, filters)
-    print(transactions_data)
+
     if page > transactions_data.total_pages:
         page = transactions_data.total_pages
     if page < 1:

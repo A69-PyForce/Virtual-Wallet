@@ -219,12 +219,21 @@
 
                 <div class="form-group">
                     <label for="transactionDescription"><i class="bi bi-text-paragraph"></i> Description</label>
-                    <textarea id="transactionDescription" name="description" class="form-control" rows="3"></textarea>
+                    <textarea id="transactionDescription" name="description" class="form-control" rows="3"
+                        style="resize: none;"></textarea>
                 </div>
 
+                <label for="receiver_username"><i class="bi bi-person"></i> Receiver</label>
                 <div class="form-group">
-                    <label for="receiverName"><i class="bi bi-person"></i> Receiver Name</label>
-                    <input type="text" id="receiverName" name="receiver_username" class="form-control" required>
+                    <select id="receiver_username" name="receiver_username" class="form-select" required>
+                        <option value="">Select Contact</option>
+                        {% for contact in contacts %}
+                        <option value="{{ contact.username }}" {{ 'selected' if receiver_username==contact.username
+                            else '' }}>
+                            {{ contact.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <div class="form-group">
