@@ -1,5 +1,4 @@
-from routers.web.transaction_categories_router import web_transactions_categories_router
-from routers.web.transactions_router import web_transactions_router
+import asyncio
 from common.error_handlers import register_error_handlers
 from utils.currencies_utils import dump_all_currencies
 from recurring_scheduler import process_due_recurring
@@ -7,7 +6,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi import FastAPI
 import uvicorn
-import asyncio
 
 # API Routers imports
 from routers.api.admin_router import api_admin_router
@@ -22,8 +20,10 @@ from routers.api.recurring_router import api_recurring_router
 from routers.web.home_router import web_home_router
 from routers.web.users_router import web_users_router
 from routers.web.contacts_router import web_contacts_router
-from routers.web.recurring_router import web_recurring_router
 from routers.web.admin_router import web_admin_router
+from routers.web.recurring_router import web_recurring_router
+from routers.web.transaction_categories_router import web_transactions_categories_router
+from routers.web.transactions_router import web_transactions_router
 
 # FastAPI app
 app = FastAPI()
