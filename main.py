@@ -30,7 +30,7 @@ from routers.web.bank_cards_router import web_bank_cards_router
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get('/favicon.ico', include_in_schema=False)
-async def favicon():
+async def favicon() -> FileResponse:
     """
     Serve favicon for web frontend.
     """
@@ -70,4 +70,4 @@ if __name__ == "__main__":
 
     # Uncomment on first startup to cache currencies and also dump them in database
     dump_all_currencies()
-    uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app="main:app", host="127.0.0.1", port=8000, reload=True)
