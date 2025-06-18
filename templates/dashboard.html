@@ -144,17 +144,25 @@
                         <div id="bankCards">
                             {% if cards %}
                             {% for card in cards %}
-                            <div class="bank-card {% if card.image_url %}has-image{% endif %}" {% if card.image_url
-                                %}style="background-image: url('{{ card.image_url }}')" {% endif %}>
-                                <div>{{ card.type }}</div>
-                                <div class="card-number">**** **** **** ****</div>
-                                <div class="card-info">
-                                    <div>{{ card.nickname if card.nickname else ''}}</div>
+                            <a href="/users/cards/{{ card.id }}" class="bank-card-link" style="text-decoration: none;">
+                                <div class="virtual-card"
+                                    style="--card-bg-image: url('{{ card.image_url or '/static/images/default_bank_card_image.jpg' }}')">
+                                    <div class="card-header">
+                                        <span class="card-type">{{ card.type }}</span>
+                                        <span class="card-nickname">{{ card.nickname or "Unnamed Card" }}</span>
+                                    </div>
+                                    <div class="card-number">**** **** **** ****</div>
+                                    <div class="card-info">
+                                        <span class="card-holder">••••••••••</span>
+                                        <span class="card-expiry">••/••</span>
+                                    </div>
                                     {% if card.is_deactivated %}
-                                    <div>DEACTIVATED</div>
+                                    <div
+                                        style="position: absolute; top: 10px; right: 10px; background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                                        DEACTIVATED</div>
                                     {% endif %}
                                 </div>
-                            </div>
+                            </a>
                             {% endfor %}
                             {% else %}
                             <div style="color: #666; font-size: 0.9rem;">No cards yet.</div>
@@ -169,20 +177,17 @@
             </div>
 
             <div style="text-align: center; margin-top: 2rem; display: flex; justify-content: center; gap: 1rem;">
-                <form action="/users/transactions/history">
-                    <button class="btn">📃 View All Transactions</button>
-                </form>
 
                 <form action="/users/contacts" method="get">
                     <button class="btn btn-secondary">👥 View Contacts</button>
                 </form>
 
-                <form action="/categories" method="get">
-                    <button class="btn btn-secondary">🏷️ View Categories</button>
+                <form action="/users/transactions/history">
+                    <button class="btn">📃 View All Transactions</button>
                 </form>
 
-                <form action="/users/cards/manage" method="get">
-                    <button class="btn">📇 Manage Cards</button>
+                <form action="/categories" method="get">
+                    <button class="btn btn-secondary">🏷️ View Categories</button>
                 </form>
 
             </div>

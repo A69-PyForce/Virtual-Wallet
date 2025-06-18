@@ -27,8 +27,8 @@ class BankCardCreateInfo(BaseModel):
             raise ValueError(f"Invalid card type: {value}.")
         return value
     
-    nickname: Optional[Annotated[str, StringConstraints(min_length=1, max_length=40)]] = None
-    image_url: Optional[Annotated[str, StringConstraints(min_length=1, max_length=256)]] = None
+    nickname: Optional[Annotated[str, StringConstraints(min_length=0, max_length=40)]] = None
+    image_url: Optional[Annotated[str, StringConstraints(min_length=0, max_length=256)]] = None
 
 # Used for returning card summaries in the /users/info page
 class BankCardSummary(BaseModel):
