@@ -11,6 +11,16 @@ class TransactionServiceInsufficientFunds(service.TransactionServiceError):
 
 @api_transactions_router.get("", response_model=UserTransactionsResponse)
 def get_user_transactions(limit: int | None = None, u_token: str = Header()):
+    """
+    Retrieve a list of transactions (both sent and received) for the authenticated user.
+
+    Args:
+        limit (int, optional): Optional limit for number of transactions returned.
+        u_token (str): User authentication token.
+
+    Returns:
+        UserTransactionsResponse: List of user's transactions.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -21,6 +31,16 @@ def get_user_transactions(limit: int | None = None, u_token: str = Header()):
 
 @api_transactions_router.post("")
 async def create_transaction(transaction_data: TransactionCreate, u_token: str = Header()):
+    """
+    Create a new transaction between two users.
+
+    Args:
+        transaction_data (TransactionCreate): Transaction details.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response depending on validations.
+    """
     sender = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -41,6 +61,16 @@ async def create_transaction(transaction_data: TransactionCreate, u_token: str =
 
 @api_transactions_router.put("/{transaction_id}/confirm")
 async def confirm_transaction(transaction_id: int, u_token: str = Header()):
+    """
+    Confirm a pending transaction as receiver.
+
+    Args:
+        transaction_id (int): ID of the transaction to confirm.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -54,6 +84,16 @@ async def confirm_transaction(transaction_id: int, u_token: str = Header()):
 
 @api_transactions_router.put("/{transaction_id}/decline")
 async def decline_tran(transaction_id: int, u_token: str = Header()):
+    """
+    Decline a pending transaction and refund sender.
+
+    Args:
+        transaction_id (int): ID of the transaction to decline.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -66,9 +106,18 @@ async def decline_tran(transaction_id: int, u_token: str = Header()):
         return responses.InternalServerError()
 
 @api_transactions_router.get("/history", response_model=list[TransactionOut])
-def get_transaction_history(
-    filters: TransactionFilterParams = Depends(),
-    u_token: str = Header()):
+def get_transaction_history(filters: TransactionFilterParams = Depends(),
+                            u_token: str = Header()):
+    """
+    Retrieve full transaction history with filtering, sorting, and pagination.
+
+    Args:
+        filters (TransactionFilterParams): Filtering parameters.
+        u_token (str): User authentication token.
+
+    Returns:
+        List of filtered transactions.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:

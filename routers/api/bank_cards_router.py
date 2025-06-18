@@ -10,6 +10,16 @@ api_bank_cards_router = APIRouter(prefix='/api/users/bankcards')
 
 @api_bank_cards_router.post(path="")
 def add_card_to_user(card_info: BankCardCreateInfo, u_token: str = Header()):
+    """
+    Add a new bank card to the authenticated user account.
+
+    Args:
+        card_info (BankCardCreateInfo): Card details to add.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response depending on API checks.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -28,6 +38,16 @@ def add_card_to_user(card_info: BankCardCreateInfo, u_token: str = Header()):
     
 @api_bank_cards_router.delete(path="")
 def add_card_to_user(card_info: BankCardEncryptInfo, u_token: str = Header()):
+    """
+    Remove a bank card from the authenticated user account.
+
+    Args:
+        card_info (BankCardEncryptInfo): Card data used to identify the card for removal.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -50,6 +70,16 @@ def add_card_to_user(card_info: BankCardEncryptInfo, u_token: str = Header()):
     
 @api_bank_cards_router.get(path="/{card_id}")
 def get_card_details_for_user(card_id, u_token: str = Header()):
+    """
+    Retrieve full details of a specific bank card for the user.
+
+    Args:
+        card_id (int): ID of the card.
+        u_token (str): User authentication token.
+
+    Returns:
+        Full card details if found, or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -67,6 +97,17 @@ def get_card_details_for_user(card_id, u_token: str = Header()):
     
 @api_bank_cards_router.put(path="/{card_id}/withdraw")
 def withdraw_from_card_to_user_balance(card_id: int, amount: Amount, u_token: str = Header()):
+    """
+    Withdraw funds from the specified card and credit user's internal balance.
+
+    Args:
+        card_id (int): ID of the card.
+        amount (Amount): Amount to withdraw.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -95,6 +136,17 @@ def withdraw_from_card_to_user_balance(card_id: int, amount: Amount, u_token: st
     
 @api_bank_cards_router.put(path="/{card_id}/deposit")
 def deposit_to_card_from_user_balance(card_id: int, amount: Amount, u_token: str = Header()):
+    """
+    Deposit funds from user's internal balance to the specified bank card.
+
+    Args:
+        card_id (int): ID of the card.
+        amount (Amount): Amount to deposit.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -123,6 +175,17 @@ def deposit_to_card_from_user_balance(card_id: int, amount: Amount, u_token: str
     
 @api_bank_cards_router.put(path="/{card_id}/nickname")
 def change_user_card_nickname(card_id: int, name: BankCardNickname, u_token: str = Header()):
+    """
+    Change nickname for a specific bank card.
+
+    Args:
+        card_id (int): ID of the card.
+        name (BankCardNickname): New nickname.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -138,6 +201,17 @@ def change_user_card_nickname(card_id: int, name: BankCardNickname, u_token: str
     
 @api_bank_cards_router.put(path="/{card_id}/image")
 def change_user_card_nickname(card_id: int, image: BankCardImageURL, u_token: str = Header()):
+    """
+    Change image URL for a specific bank card.
+
+    Args:
+        card_id (int): ID of the card.
+        image (BankCardImageURL): New image URL.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:

@@ -8,18 +8,40 @@ from utils.currencies_utils import get_currency_code_by_user_id
 
 
 class TransactionServiceError(Exception):
+    """
+    Base exception class for all transaction service errors.
+    """
     pass
 
 class TransactionServiceInsufficientFunds(TransactionServiceError):
+    """
+    Raised when the sender does not have sufficient balance to perform the transaction.
+    """
     pass
 
 class TransactionServiceUserNotFound(TransactionServiceError):
+    """
+    Raised when the receiver user is not found in the system.
+    """
     pass
 
 class TransactionServiceCurrencyNotFound(TransactionServiceError):
+    """
+    Raised when currency information is missing or invalid.
+    """
     pass
 
 def get_transactions_for_user(user_id: int, limit: int | None = None) -> UserTransactionsResponse:
+    """
+    Retrieve all transactions (sent or received) for a user.
+
+    Args:
+        user_id (int): ID of the user.
+        limit (int, optional): Optional limit on number of transactions returned.
+
+    Returns:
+        UserTransactionsResponse: List of transactions.
+    """
     sql = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id,
                t.amount, c.code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, 
@@ -40,6 +62,22 @@ def get_transactions_for_user(user_id: int, limit: int | None = None) -> UserTra
     return UserTransactionsResponse(transactions=[TransactionOut.from_query(row) for row in rows])
 
 async def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int:
+    """
+    Create a new transaction between sender and receiver, handling validations and currency conversion.
+
+    Args:
+        data (TransactionCreate): Transaction details.
+        sender (UserFromDB): The user initiating the transaction.
+
+    Returns:
+        int: ID of the newly created transaction.
+
+    Raises:
+        TransactionServiceError: For generic business logic errors.
+        TransactionServiceUserNotFound: If receiver does not exist.
+        TransactionServiceInsufficientFunds: If sender lacks sufficient funds.
+        TransactionServiceCurrencyNotFound: If currency info is missing.
+    """
     receiver = get_user_by_username(data.receiver_username)
     #Check recipient
     if sender.is_blocked:
@@ -97,6 +135,18 @@ async def create_transaction(data: TransactionCreate, sender: UserFromDB) -> int
     ))
 
 async def confirm_transaction(transaction_id: int, user: UserFromDB) -> bool:
+    """
+    Confirm (approve) a pending transaction by the receiver.
+
+    Performs validation and updates balances.
+
+    Args:
+        transaction_id (int): ID of the transaction to confirm.
+        user (UserFromDB): The receiver confirming the transaction.
+
+    Returns:
+        bool: True if confirmation succeeded.
+    """
     sql = """
         SELECT amount, currency_id, sender_id, receiver_id, is_accepted
         FROM Transactions WHERE id = ?
@@ -141,6 +191,16 @@ async def confirm_transaction(transaction_id: int, user: UserFromDB) -> bool:
 
 
 async def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
+    """
+    Decline a pending transaction by the receiver and refund sender.
+
+    Args:
+        transaction_id (int): ID of the transaction to decline.
+        user (UserFromDB): The receiver declining the transaction.
+
+    Returns:
+        bool: True if decline and refund succeeded.
+    """
     sql = """SELECT amount, sender_id, receiver_id, is_accepted FROM Transactions WHERE id = ?"""
 
     result = read_query(sql, (transaction_id,))
@@ -165,6 +225,16 @@ async def decline_transaction(transaction_id: int, user: UserFromDB) -> bool:
 
 
 def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterParams) -> ListTransactions:
+    """
+    Retrieve transaction history for a user with full filtering, sorting and pagination support.
+
+    Args:
+        user (UserFromDB): The authenticated user.
+        filters (TransactionFilterParams): Filtering and pagination parameters.
+
+    Returns:
+        ListTransactions: Paginated and filtered list of transactions.
+    """
     base_query = """
         FROM Transactions t
         JOIN TransactionCategories tc ON t.category_id = tc.id
@@ -181,25 +251,24 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     if filters.end_date and isinstance(filters.end_date, str):
         filters.end_date = datetime.strptime(filters.end_date, '%Y-%m-%d').date()
 
-    #date filters
     if filters.start_date:
         base_query += " AND DATE(t.created_at) >= ?"
         params.append(filters.start_date)
     if filters.end_date:
         base_query += " AND DATE(t.created_at) <= ?"
         params.append(filters.end_date)
-    # direction filter
+
     if filters.direction == "incoming":
         base_query += " AND t.receiver_id = ?"
         params.append(user.id)
     elif filters.direction == "outgoing":
         base_query += " AND t.sender_id = ?"
         params.append(user.id)
-    # category filter
+
     if filters.category_id:
         base_query += " AND t.category_id = ?"
         params.append(filters.category_id)
-    # Status filter
+
     if filters.status:
         if filters.status == "pending":
             base_query += " AND t.is_accepted = 0"
@@ -212,7 +281,6 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     count_query = f"SELECT COUNT(*) {base_query}"
     total_count = read_query(count_query, tuple(params))[0][0]
 
-    # Default values for pagination
     page_size = filters.limit or 30
     total_pages = (total_count + page_size - 1) // page_size
     
@@ -263,6 +331,17 @@ def get_user_transaction_history(user: UserFromDB, filters: TransactionFilterPar
     )
 
 async def create_transaction_from_recurring(template: TransactionTemplate) -> bool:
+    """
+    Create a transaction based on a recurring transaction template.
+
+    Performs validations and handles currency conversion.
+
+    Args:
+        template (TransactionTemplate): Recurring transaction template.
+
+    Returns:
+        bool: True if transaction creation succeeded.
+    """
     if template.sender_id == template.receiver_id:
         print("[Recurring] Sender and receiver cannot be the same.")
         return False
@@ -318,8 +397,14 @@ async def create_transaction_from_recurring(template: TransactionTemplate) -> bo
 
 def get_transaction_by_id(transaction_id: int, user: UserFromDB) -> TransactionInfo | None:
     """
-    Get a single transaction by ID, ensuring the user has permission to view it.
-    The user must be either the sender or receiver of the transaction.
+    Retrieve a single transaction by ID, ensuring the user has permission to view it.
+
+    Args:
+        transaction_id (int): ID of the transaction.
+        user (UserFromDB): The user requesting the transaction data.
+
+    Returns:
+        TransactionInfo | None: Transaction info if found, otherwise None.
     """
     sql = """
         SELECT 

@@ -1,10 +1,13 @@
-from typing import Any
-
 from data.database import read_query, update_query
-from data.models import UserSummary, UserFilterParams, AdminTransactionFilterParams, TransactionOut, AdminTransactionOut
+from data.models import UserSummary, UserFilterParams, AdminTransactionFilterParams, AdminTransactionOut
 
 
 def get_all_users(filters: UserFilterParams) -> list[UserSummary]:
+    """
+    Retrieve all users based on provided filtering criteria.
+    Supports filtering by verification status and search keyword (username, email, phone).
+    Returns paginated list of UserSummary objects.
+    """
     sql = """
         SELECT id, username, email, phone_number, is_blocked, is_verified, is_admin, created_at, avatar_url
         FROM Users
@@ -30,14 +33,26 @@ def get_all_users(filters: UserFilterParams) -> list[UserSummary]:
 
 
 def approve_user(user_id: int) -> bool:
+    """
+    Approve (verify) user if currently unverified.
+    Returns True if updated successfully, False if already verified or not found.
+    """
     sql = "UPDATE Users SET is_verified = 1 WHERE id = ? AND is_verified = 0"
     return update_query(sql, (user_id,))
 
 def set_user_blocked_state(user_id: int, blocked: bool) -> bool:
+    """
+    Update blocked state of user. Set blocked=True or blocked=False.
+    Returns True if update successful.
+    """
     sql = "UPDATE Users SET is_blocked = ? WHERE id = ?"
     return update_query(sql, (int(blocked), user_id))
 
 def get_all_transactions(filters: AdminTransactionFilterParams) -> list[AdminTransactionOut]:
+    """
+    Retrieve transactions for admin, filtered by period, direction, sender/receiver, and paginated.
+    Supports sorting by date or amount.
+    """
     sql = """
         SELECT t.id, t.name, t.description, t.sender_id, t.receiver_id, t.amount,
           c.code AS currency_code, t.category_id, t.is_accepted, t.is_recurring, t.created_at, t.original_amount, t.original_currency_code,
@@ -78,6 +93,10 @@ def get_all_transactions(filters: AdminTransactionFilterParams) -> list[AdminTra
 
 
 def deny_transaction(transaction_id: int) -> bool:
+    """
+    Deny (cancel) a pending transaction. Returns funds to sender and marks transaction as declined.
+    Returns True if transaction was successfully denied, False if already confirmed or not found.
+    """
     sql = """
         SELECT sender_id, amount, is_accepted
         FROM Transactions
@@ -101,6 +120,10 @@ def deny_transaction(transaction_id: int) -> bool:
     return update_query("UPDATE Transactions SET is_accepted = -1 WHERE id = ? AND is_accepted = 0", (transaction_id,))
 
 def count_users(filters: UserFilterParams) -> int:
+    """
+    Count total users based on optional search filter.
+    Used for pagination.
+    """
     sql = "SELECT COUNT(*) FROM Users WHERE 1=1"
     params = []
     if filters.search:

@@ -1,6 +1,5 @@
 import io
 import traceback
-from unicodedata import category
 import cloudinary
 from PIL import Image
 import cloudinary.uploader
@@ -10,14 +9,25 @@ from starlette.responses import RedirectResponse
 from data.models import TransactionCategoryCreate
 from common.authenticate import get_user_if_token, get_user_or_raise_401
 from fastapi import APIRouter, Request, Form, HTTPException, UploadFile, File
-from services.transaction_categories_service import change_category_image_url, get_all_categories_for_user, create_category_for_user, \
+from services.transaction_categories_service import get_all_categories_for_user, create_category_for_user, \
     get_category_by_id_for_user, update_category_for_user, delete_category_for_user\
+
+
 
 web_transactions_categories_router = APIRouter(prefix='/categories')
 templates = template_config.CustomJinja2Templates(directory='templates')
 
 @web_transactions_categories_router.get("")
 def list_categories(request: Request):
+    """
+    Render categories management page.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML page with list of user's categories.
+    """
     user = get_user_if_token(request)
     if not user:
         return RedirectResponse(url="/users/login", status_code=302)
@@ -29,6 +39,15 @@ def list_categories(request: Request):
 
 @web_transactions_categories_router.get("/new")
 def new_category(request: Request):
+    """
+    Render form to create a new transaction category.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML form page for new category creation.
+    """
     user = get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -72,7 +91,6 @@ async def create_category(
             print(traceback.format_exc())
             image_url = None
 
-    # normalize optional URL
     url = image_url.strip() if image_url else None
     if not url or len(url) < 5:
         url = None
@@ -83,6 +101,16 @@ async def create_category(
 
 @web_transactions_categories_router.get("/{category_id}/edit")
 def edit_category(request: Request, category_id: int):
+    """
+    Render form to edit an existing category.
+
+    Args:
+        request (Request): FastAPI request object.
+        category_id (int): ID of category to edit.
+
+    Returns:
+        HTML form page pre-filled with category data.
+    """
     user = get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -144,6 +172,16 @@ async def update_category(
 
 @web_transactions_categories_router.post("/{category_id}/delete")
 def delete_category(request: Request, category_id: int):
+    """
+    Delete a transaction category.
+
+    Args:
+        request (Request): FastAPI request object.
+        category_id (int): ID of category to delete.
+
+    Returns:
+        Redirect to category management page.
+    """
     token = request.cookies.get("u-token")
     user = get_user_or_raise_401(token)
     removed = delete_category_for_user(category_id, user.id)

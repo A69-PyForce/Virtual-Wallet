@@ -10,20 +10,33 @@ api_users_router = APIRouter(prefix='/api/users')
 
 @api_users_router.get(path="")
 def get_all_users(username: str = None, page: int = 1, page_size: int = 10, u_token = Header()):
+    """
+    Retrieve a filtered and paginated list of users (for contact search).
+
+    Excludes current user and their existing contacts from results.
+
+    Args:
+        username (str, optional): Username filter.
+        page (int, optional): Page number. Defaults to 1.
+        page_size (int, optional): Page size. Defaults to 10.
+        u_token (str): User authentication token.
+
+    Returns:
+        UsersPaginationList: Paginated list of users.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     return users_service.list_users_with_total_count(username=username, page=page, page_size=page_size, current_user_id=user.id)
 
 @api_users_router.post(path="/register")
 def user_register(register_info: UserRegisterInfo):
     """
-    Register a new user.
+    Register a new user account.
 
     Args:
-        user (UserRegisterInfo): The user's registration information.
+        register_info (UserRegisterInfo): Registration details.
 
     Returns:
-        Created: If user is successfully registered.
-        BadRequest: If username is already in use or registration data is invalid.
+        Success or error response depending on validation and service checks.
     """
     # Verify User Register data
     if not match_regex(register_info.username, USER_USERNAME_PATTERN):
@@ -122,6 +135,15 @@ def user_info(u_token: str = Header()):
     
 @api_users_router.put(path="/avatar")
 def change_user_avatar_url(avatar_url: UserAvatarURL, u_token: str = Header()):
+    """
+    Register a new user account.
+
+    Args:
+        register_info (UserRegisterInfo): Registration details.
+
+    Returns:
+        Success or error response depending on validation and service checks.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:

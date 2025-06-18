@@ -1,11 +1,20 @@
 import asyncio
-from threading import Timer
 from datetime import datetime, timedelta
 from data.database import read_query, update_query
 from data.models import TransactionTemplate
 from services.transactions_service import create_transaction_from_recurring
 
 async def process_due_recurring():
+    """
+    Background worker that continuously processes due recurring transactions.
+
+    - Queries for all recurring transactions where next_exec_date is due.
+    - Creates new transactions based on stored templates.
+    - Reschedules the next execution date based on the interval and type (DAYS, HOURS, MINUTES).
+    - Sleeps for 30 seconds between each check cycle.
+
+    Runs indefinitely as an asyncio task.
+    """
     while True:
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Checking for due recurring...")
 

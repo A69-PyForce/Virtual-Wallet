@@ -7,9 +7,28 @@ from fastapi import Request
 templates = CustomJinja2Templates(directory="templates")
 
 def is_api_request(request: Request) -> bool:
+    """
+    Helper function to determine if the incoming request targets the API endpoints.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        bool: True if request is for API, False if for web frontend.
+    """
     return request.url.path.startswith("/api")
 
 async def not_found(request: Request, exc: StarletteHTTPException):
+    """
+    Handle 404 Not Found errors.
+
+    Args:
+        request (Request): FastAPI request object.
+        exc (StarletteHTTPException): Exception instance.
+
+    Returns:
+        JSONResponse or TemplateResponse depending on request type.
+    """
     if is_api_request(request):
         return JSONResponse({"detail": "Page Not Found"}, status_code=404)
     return templates.TemplateResponse(
@@ -24,6 +43,9 @@ async def not_found(request: Request, exc: StarletteHTTPException):
     )
 
 async def bad_request(request: Request, exc: StarletteHTTPException):
+    """
+    Handle 400 Bad Request errors.
+    """
     if is_api_request(request):
         return JSONResponse({"detail": "Bad Request"}, status_code=400)
     return templates.TemplateResponse(

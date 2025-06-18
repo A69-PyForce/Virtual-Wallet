@@ -12,6 +12,15 @@ templates = CustomJinja2Templates(directory="templates")
 
 @web_recurring_router.get("/")
 def get_recurring_transactions(request: Request):
+    """
+    Render page showing all recurring transactions for the user.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML page with list of recurring transactions.
+    """
     user = authenticate.get_user_or_raise_401(request.headers.get("u_token"))
     recurring = recurring_service.get_recurring_by_user(user.id)
     return templates.TemplateResponse("recurring.html", {
@@ -21,6 +30,16 @@ def get_recurring_transactions(request: Request):
 
 @web_recurring_router.get("/new")
 def new_recurring_form(request: Request, transaction_id: int = None):
+    """
+    Render form to create a new recurring rule.
+
+    Args:
+        request (Request): FastAPI request object.
+        transaction_id (int, optional): Transaction ID to prefill.
+
+    Returns:
+        HTML form for recurring rule creation.
+    """
     return templates.TemplateResponse("recurring_create.html", {
         "request": request,
         "transaction_id": transaction_id
