@@ -248,16 +248,117 @@ body {
     min-height: 180px;
 }
 
+.virtual-card {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background-image: var(--card-bg-image, none);
+    background-size: cover;
+    background-position: center;
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    min-height: 200px;
+    transition: all 0.3s ease;
+}
+
+/* Compact version for dashboard */
+.bank-card-link .virtual-card {
+    padding: 16px;
+    min-height: 200px;
+    margin-bottom: 14px;
+}
+
+.bank-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    margin-bottom: 12px;
+}
+
+.bank-card-link:hover {
+    transform: translateY(-1px);
+}
+
+.bank-card-link:hover .virtual-card {
+    transform: scale(1.002);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Compact header for dashboard */
+.bank-card-link .card-header {
+    margin-bottom: 12px;
+}
+
+.card-type {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+/* Compact type for dashboard */
+.bank-card-link .card-type {
+    font-size: 0.8rem;
+}
+
+.card-nickname {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Compact nickname for dashboard */
+.bank-card-link .card-nickname {
+    font-size: 0.95rem;
+}
+
 .card-number {
-    font-size: 1.5rem;
-    letter-spacing: 0.2rem;
-    margin: 1rem 0;
+    font-size: 1.3rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    margin: 20px 0;
+    font-weight: 500;
+}
+
+/* Compact number for dashboard */
+.bank-card-link .card-number {
+    font-size: 1.1rem;
+    margin: 12px 0;
+    letter-spacing: 1.5px;
 }
 
 .card-info {
     display: flex;
     justify-content: space-between;
-    margin-top: 1rem;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+}
+
+/* Compact info for dashboard */
+.bank-card-link .card-info {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+.card-holder,
+.card-expiry {
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+}
+
+/* Compact holder/expiry for dashboard */
+.bank-card-link .card-holder,
+.bank-card-link .card-expiry {
+    font-size: 0.85rem;
 }
 
 .pagination {
@@ -499,8 +600,8 @@ body {
 }
 
 .bank-cards-container {
-    min-height: 410px;
-    max-height: 410px;
+    min-height: 420px;
+    max-height: 420px;
     overflow-y: auto;
     padding-right: 10px;
     scrollbar-width: thin;
@@ -687,7 +788,6 @@ body {
     padding: 0.4rem 0.8rem;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 0.9rem;
     transition: background-color 0.2s;
 }
 
