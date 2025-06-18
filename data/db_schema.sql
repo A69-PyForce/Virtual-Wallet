@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Currencies` (
   UNIQUE INDEX `code_UNIQUE` (`code` ASC) VISIBLE,
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 0;
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Users` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 0;
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`BankCards` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 0;
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`TransactionCategories` (
   `user_id` INT(11) NOT NULL,
   `name` VARCHAR(40) NOT NULL,
   `image_url` VARCHAR(256) NULL DEFAULT NULL,
+  `is_deleted` TINYINT(4) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   INDEX `fk_TransactionCategories_Users1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_TransactionCategories_Users1`
@@ -92,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`TransactionCategories` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 0;
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -110,8 +111,8 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Transactions` (
   `is_accepted` TINYINT(4) NOT NULL DEFAULT 0,
   `is_recurring` TINYINT(4) NOT NULL DEFAULT 0,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  `original_amount` FLOAT NULL DEFAULT NULL,
-  `original_currency_code` VARCHAR(3) NULL DEFAULT NULL,
+  `original_amount` FLOAT NOT NULL,
+  `original_currency_code` VARCHAR(3) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_Transactions_TransactionCategories1_idx` (`category_id` ASC) VISIBLE,
   INDEX `fk_Transactions_Users1_idx` (`sender_id` ASC) VISIBLE,
@@ -132,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Transactions` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 0;
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
@@ -152,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `virtual_wallet_db`.`Recurring` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 0;
+AUTO_INCREMENT = 1;
 
 
 -- -----------------------------------------------------
