@@ -1,80 +1,403 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/styles.css">
   {% from 'macros.html' import load_navbar, load_footer %}
-  <title>Manage Cards</title>
+  <title>Card Details</title>
+  <style>
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .alert-danger {
+      background: #fee;
+      border: 1px solid #fcc;
+      color: #c33;
+    }
+
+    .alert-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+    }
+
+    .card-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .card-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    .card-details-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .actions-section {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid #e9ecef;
+    }
+
+    .actions-section h3 {
+      margin-bottom: 1rem;
+      color: #495057;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .action-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .action-group h4 {
+      margin-bottom: 0.75rem;
+      color: #6c757d;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .transaction-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .update-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .confirmation-dialog {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .confirmation-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirmation-content h3 {
+      margin-bottom: 1rem;
+      color: #dc3545;
+    }
+
+    .confirmation-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .btn-cancel {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-cancel:hover {
+      background: #5a6268;
+    }
+
+    .btn-confirm-delete {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-confirm-delete:hover {
+      background: #c82333;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-type {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .card-nickname {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .card-number {
+      font-size: 1.3rem;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      margin: 20px 0;
+      font-weight: 500;
+    }
+
+    .card-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+    }
+
+    .show-hide-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .show-hide-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .card-details {
+      display: none;
+    }
+
+    .action-form {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .action-input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .action-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .action-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e1e5e9;
+      margin: 20px 0;
+    }
+  </style>
 </head>
+
 <body>
   {{ load_navbar(user) }}
 
-  <div class="container my-5">
-    <h2 class="text-center mb-4">Manage Your Bank Cards</h2>
+  <div class="container">
+    <div id="dashboard" class="page" style="padding-bottom: 0.01rem;">
 
-    {% if error_message %}
+      {% if error_message %}
       <div class="alert alert-danger">{{ error_message }}</div>
-    {% endif %}
+      {% endif %}
 
-    <div class="bank-cards-container">
-      {% for card in cards %}
-        <div class="bank-card">
-          {% if card.image_url %}
-            <div class="card-image" style="height:140px; overflow:hidden; border-radius:8px; margin-bottom:1rem;">
-              <img src="{{ card.image_url }}" alt="Card Image" style="width:100%; object-fit:cover;">
+      {% if number %}
+      <div class="card-layout" style="margin-bottom: 2rem;">
+        <div class="card-details-section">
+          <div class="virtual-card"
+            style="--card-bg-image: url('{{ image_url or '/static/images/default_bank_card_image.jpg' }}')">
+            <div class="card-header">
+              <span class="card-type">{{ type }}</span>
+              <span class="card-nickname">{{ nickname or "Unnamed Card" }}</span>
             </div>
-          {% endif %}
+            <div class="card-number" id="maskedCardNumber">**** **** **** ****</div>
+            <div class="card-info">
+              <span id="maskedCardHolder">••••••••••</span>
+              <span id="maskedCardExpiry">••/••</span>
+            </div>
+            <button class="show-hide-btn" id="toggleCardDetails" type="button">Show Details</button>
+            <div class="card-details" id="decryptedCardDetails">
+              <div><strong>Number:</strong> <span id="realCardNumber">{{ number }}</span></div>
+              <div><strong>Expiry:</strong> <span id="realCardExpiry">{{ expiration_date }}</span></div>
+              <div><strong>Holder:</strong> <span id="realCardHolder">{{ card_holder }}</span></div>
+              <div><strong>CCV:</strong> <span id="realCardCCV">{{ ccv }}</span></div>
+            </div>
+          </div>
+        </div>
 
-          <h3 class="mb-2">{{ card.nickname or "Unnamed Card" }}</h3>
-          <div class="card-info mb-3">
-            <div><strong>Type:</strong> {{ card.type }}</div>
-            <div>
-              <strong>Status:</strong>
-              {% if card.is_deactivated %}
-                <span class="badge badge-danger">Deactivated</span>
-              {% else %}
-                <span class="badge badge-active">Active</span>
-              {% endif %}
+        <div class="actions-section" style="padding-bottom: 0rem;">
+          <h3>Card Actions</h3>
+
+          <div class=" action-group">
+            <h4>Transactions</h4>
+            <div class="transaction-actions-container">
+              <form method="post" action="/users/cards/{{ card_id }}/deposit" class="action-form">
+                <input type="number" name="amount" class="action-input" placeholder="Deposit Amount" step="0.01"
+                  required>
+                <button class="btn btn-primary">Deposit</button>
+              </form>
+
+              <form method="post" action="/users/cards/{{ card_id }}/withdraw" class="action-form">
+                <input type="number" name="amount" class="action-input" placeholder="Withdraw Amount" step="0.01"
+                  required>
+                <button class="btn btn-accept">Withdraw</button>
+              </form>
             </div>
           </div>
 
-          <form method="post" action="/users/cards/{{ card.id }}/deposit" class="form-row">
-            <input type="number" name="amount" placeholder="Deposit" step="0.01" required>
-            <button class="btn btn-success btn-sm">Deposit</button>
-          </form>
+          <div class="action-group">
+            <h4>Card Settings</h4>
+            <div class="update-actions-container">
+              <form method="post" action="/users/cards/{{ card_id }}/nickname" class="action-form">
+                <input type="text" name="nickname" class="action-input" placeholder="New Nickname" maxlength="40"
+                  value="{{ nickname or '' }}">
+                <button class="btn btn-secondary">Update Nickname</button>
+              </form>
 
-          <form method="post" action="/users/cards/{{ card.id }}/withdraw" class="form-row">
-            <input type="number" name="amount" placeholder="Withdraw" step="0.01" required>
-            <button class="btn btn-danger btn-sm">Withdraw</button>
-          </form>
+              <form method="post" action="/users/cards/{{ card_id }}/image" class="action-form">
+                <input type="text" name="image_url" class="action-input" placeholder="New Image URL"
+                  value="{{ image_url or '' }}">
+                <button class="btn btn-secondary">Update Image</button>
+              </form>
+            </div>
+          </div>
 
-          <form method="post" action="/users/cards/{{ card.id }}/nickname" class="form-row">
-            <input type="text" name="nickname" placeholder="New Nickname" maxlength="40">
-            <button class="btn btn-sm">Rename</button>
-          </form>
+          <div class="action-group">
+            <h4>Danger Zone</h4>
+            <button class="btn btn-danger btn-block" onclick="showDeleteConfirmation()">Delete Card</button>
+          </div>
+        </div>
+      </div>
 
-          <form method="post" action="/users/cards/{{ card.id }}/image" class="form-row">
-            <input type="text" name="image_url" placeholder="New Image URL">
-            <button class="btn btn-sm">Change Image</button>
-          </form>
-
-          <div class="mt-3 text-center">
-            <form method="post" action="/users/cards/{{ card.id }}/delete">
-              <button class="btn btn-danger btn-sm">Delete Card</button>
+      <!-- Confirmation Dialog -->
+      <div id="deleteConfirmation" class="confirmation-dialog">
+        <div class="confirmation-content">
+          <h3>⚠️ Delete Card</h3>
+          <p>Are you sure you want to delete this card? This action cannot be undone.</p>
+          <div class="confirmation-buttons">
+            <button class="btn-cancel" onclick="hideDeleteConfirmation()">Cancel</button>
+            <form method="post" action="/users/cards/{{ card_id }}/delete" style="display: inline;">
+              <button type="submit" class="btn-confirm-delete">Delete Card</button>
             </form>
           </div>
         </div>
-      {% endfor %}
-    </div>
+      </div>
+      {% else %}
+      <div class="alert alert-warning">Card not found.</div>
+      {% endif %}
 
-    <div class="text-center mt-4">
-      <form action="/users/dashboard" method="get">
-        <button class="btn btn-secondary">⬅ Back to Dashboard</button>
-      </form>
     </div>
   </div>
 
+  <script>
+    const toggleBtn = document.getElementById('toggleCardDetails');
+    const details = document.getElementById('decryptedCardDetails');
+    const maskedNumber = document.getElementById('maskedCardNumber');
+    const maskedHolder = document.getElementById('maskedCardHolder');
+    const maskedExpiry = document.getElementById('maskedCardExpiry');
+    const realNumber = document.getElementById('realCardNumber');
+    const realHolder = document.getElementById('realCardHolder');
+    const realExpiry = document.getElementById('realCardExpiry');
+    let shown = false;
+
+    if (toggleBtn) {
+      toggleBtn.onclick = function () {
+        shown = !shown;
+        if (shown) {
+          // Format card number with spaces every 4 digits
+          const cardNumber = realNumber ? realNumber.textContent : 'N/A';
+          const formattedNumber = cardNumber !== 'N/A' ?
+            cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ') : 'N/A';
+
+          maskedNumber.textContent = formattedNumber;
+          maskedHolder.textContent = realHolder ? realHolder.textContent : 'N/A';
+          maskedExpiry.textContent = realExpiry ? realExpiry.textContent : 'N/A';
+          toggleBtn.textContent = 'Hide Details';
+        } else {
+          maskedNumber.textContent = '**** **** **** ****';
+          maskedHolder.textContent = '••••••••••';
+          maskedExpiry.textContent = '••/••';
+          toggleBtn.textContent = 'Show Details';
+        }
+      }
+    }
+
+    function showDeleteConfirmation() {
+      document.getElementById('deleteConfirmation').style.display = 'flex';
+    }
+
+    function hideDeleteConfirmation() {
+      document.getElementById('deleteConfirmation').style.display = 'none';
+    }
+
+    // Close confirmation dialog when clicking outside
+    document.getElementById('deleteConfirmation').addEventListener('click', function (e) {
+      if (e.target === this) {
+        hideDeleteConfirmation();
+      }
+    });
+  </script>
+
   {{ load_footer() }}
 </body>
+
 </html>

@@ -35,53 +35,188 @@ def process_add_card(
     if not user:
         return RedirectResponse('/users/login', status_code=302)
 
+    # Basic validation
+    if not card_number or not card_number.strip():
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Card number is required.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+    
+    if not expiration_date or not expiration_date.strip():
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Expiration date is required.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+    
+    if not card_holder or not card_holder.strip():
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Card holder name is required.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+    
+    if not ccv or not ccv.strip():
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "CCV is required.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+    
+    if not card_type or card_type not in ["DEBIT", "CREDIT"]:
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Please select a valid card type (Debit or Credit).",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+
     try:
         encrypt_info = BankCardEncryptInfo(
-            number=card_number,
-            expiration_date=expiration_date,
-            card_holder=card_holder,
-            check_number=ccv
+            number=card_number.strip(),
+            expiration_date=expiration_date.strip(),
+            card_holder=card_holder.strip(),
+            check_number=ccv.strip()
         )
         card_info = BankCardCreateInfo(
             card_info=encrypt_info,
             type=card_type.upper(), #"DEBIT" or "CREDIT"
-            nickname=nickname,
-            image_url=image_url
+            nickname=nickname.strip() if nickname else None,
+            image_url=image_url.strip() if image_url else None
         )
 
         bank_cards_service.add_card_to_user(card_info, user)
 
-        return RedirectResponse(url="/users/cards/manage", status_code=302)
+        return RedirectResponse(url="/users/dashboard", status_code=302)
+
+    except bank_cards_service.BankCardsService_CardNotFoundError:
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Card not found. Please verify the card details and try again.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+    
+    except bank_cards_service.BankCardsService_ExternalAPIError:
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Unable to verify card with the bank. Please try again later.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
+    
+    except bank_cards_service.BankCardsService_Error:
+        return templates.TemplateResponse("new_card.html", {
+            "request": request,
+            "error_message": "Failed to add card. Please try again.",
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
+        })
 
     except Exception:
         print(traceback.format_exc())
         return templates.TemplateResponse("new_card.html", {
             "request": request,
             "error_message": "An unexpected error occurred. Please try again later.",
-            "user": user
+            "user": user,
+            "card_number": card_number,
+            "expiration_date": expiration_date,
+            "card_holder": card_holder,
+            "ccv": ccv,
+            "card_type": card_type,
+            "nickname": nickname,
+            "image_url": image_url
         })
-@web_bank_cards_router.get("/manage")
-def manage_user_cards(request: Request):
+
+@web_bank_cards_router.get("/{card_id}")
+def get_card_details(card_id: int, request: Request):
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
 
     try:
-        user_info = users_service.get_user_info(user.username)
-        cards = user_info.cards  #  list[BankCardSummary]
+        card = bank_cards_service.get_card_details_by_id(card_id, user)
+        if not card:
+            return templates.TemplateResponse("card_management.html", {
+                "request": request,
+                "user": user,
+                "error_message": "Card not found."
+            })
+        # card is BankCardFullInfo
         return templates.TemplateResponse("card_management.html", {
             "request": request,
             "user": user,
-            "cards": cards
+            "card_id": card_id,
+            "type": card.type,
+            "is_deactivated": card.is_deactivated,
+            "nickname": card.nickname,
+            "image_url": card.image_url,
+            "number": card.card.number,
+            "expiration_date": card.card.expiration_date,
+            "card_holder": card.card.card_holder,
+            "ccv": card.card.check_number,
         })
     except Exception:
         print(traceback.format_exc())
         return templates.TemplateResponse("card_management.html", {
             "request": request,
             "user": user,
-            "cards": [],
-            "error_message": "Could not load bank cards."
+            "error_message": "Could not load card details."
         })
+
 @web_bank_cards_router.post("/{card_id}/deposit")
 def deposit_to_card(card_id: int, amount: float = Form(...), request: Request = None):
     user = authenticate.get_user_if_token(request)
@@ -94,7 +229,7 @@ def deposit_to_card(card_id: int, amount: float = Form(...), request: Request = 
     except Exception:
         print(traceback.format_exc())
 
-    return RedirectResponse("/users/cards/manage", status_code=302)
+    return RedirectResponse("/users/dashboard", status_code=302)
 
 @web_bank_cards_router.post("/{card_id}/withdraw")
 def withdraw_from_card(card_id: int, amount: float = Form(...), request: Request = None):
@@ -108,13 +243,13 @@ def withdraw_from_card(card_id: int, amount: float = Form(...), request: Request
     except Exception:
         print(traceback.format_exc())
 
-    return RedirectResponse("/users/cards/manage", status_code=302)
+    return RedirectResponse("/users/dashboard", status_code=302)
 
 @web_bank_cards_router.post("/{card_id}/nickname")
 def update_card_nickname(card_id: int, nickname: str = Form(...), request: Request = None):
     user = authenticate.get_user_if_token(request)
     if not user:
-        return RedirectResponse('/users/login', status_code=302)
+        return RedirectResponse(f'/users/login', status_code=302)
 
     try:
         name = BankCardNickname(nickname=nickname)
@@ -122,7 +257,7 @@ def update_card_nickname(card_id: int, nickname: str = Form(...), request: Reque
     except Exception:
         print(traceback.format_exc())
 
-    return RedirectResponse("/users/cards/manage", status_code=302)
+    return RedirectResponse(f'/users/cards/{card_id}', status_code=302)
 
 @web_bank_cards_router.post("/{card_id}/image")
 def update_card_image(card_id: int, image_url: str = Form(...), request: Request = None):
@@ -136,7 +271,7 @@ def update_card_image(card_id: int, image_url: str = Form(...), request: Request
     except Exception:
         print(traceback.format_exc())
 
-    return RedirectResponse("/users/cards/manage", status_code=302)
+    return RedirectResponse(f'/users/cards/{card_id}', status_code=302)
 
 @web_bank_cards_router.post("/{card_id}/delete")
 def delete_card(card_id: int, request: Request = None):
@@ -150,4 +285,4 @@ def delete_card(card_id: int, request: Request = None):
     except Exception:
         print(traceback.format_exc())
 
-    return RedirectResponse("/users/cards/manage", status_code=302)
+    return RedirectResponse("/users/dashboard", status_code=302)
