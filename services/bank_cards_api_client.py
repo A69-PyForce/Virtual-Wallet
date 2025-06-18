@@ -5,17 +5,40 @@ import os
 
 # Response model for returning an error from API
 class APIErrorResponse(BaseModel):
+    """
+    Response model for returning an error from the external Bank Cards API.
+
+    Attributes:
+        detail (str): Error message description.
+        status_code (int): HTTP status code returned from the API.
+    """
     detail: str
     status_code: int
 
 # Response model for getting a card from API
 class CardBalanceResponse(BaseModel):
+    """
+    Response model representing the card balance received from the external Bank Cards API.
+
+    Attributes:
+        card_lookup_hash (str): The internal hash identifier for the card.
+        balance (int | float): The current balance of the card.
+        currency_code (str): Currency code of the card balance.
+    """
     card_lookup_hash: str
     balance: int | float
     currency_code: str
 
 # Response model for depositing or withdrawing from a bank card
 class CardTransferResponse(BaseModel):
+    """
+    Response model for card deposit or withdrawal operations.
+
+    Attributes:
+        amount (int | float): The amount transferred.
+        currency_code (str): Currency code used in the transaction.
+        transfer_type (str): Type of transfer ("deposit" or "withdraw").
+    """
     amount: int | float
     currency_code: str
     transfer_type: str
@@ -28,11 +51,31 @@ PORT = os.getenv("BANK_CARDS_API_PORT")
 if not PORT: raise ValueError("Bank Cards API port not specified in environment file.")
 
 def is_bank_cards_api_online() -> bool:
-    """Function to test if API is online."""
+    """
+    Check if the external Bank Cards API is reachable.
+
+    Attempts to establish a socket connection to the external API service.
+
+    Returns:
+        bool: True if the API is reachable, False otherwise.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex((HOST_URL, int(PORT))) == 0 # Returns True if conn success
     
 def get_bank_card_info_response(card_info: BankCardEncryptInfo):
+    """
+    Retrieve card balance information from the external Bank Cards API.
+
+    Sends a GET request to the API with encrypted card information.
+    If the API is online and responds with 200 OK, returns a CardBalanceResponse.
+    Otherwise, returns an APIErrorResponse with details.
+
+    Args:
+        card_info (BankCardEncryptInfo): Encrypted card information payload.
+
+    Returns:
+        CardBalanceResponse | APIErrorResponse: Response depending on API result.
+    """
     
     # Check if API is online
     if is_bank_cards_api_online():
@@ -70,6 +113,20 @@ def get_bank_card_info_response(card_info: BankCardEncryptInfo):
     )
     
 def withdraw_from_bank_card(card_lookup_hash: str, withdraw_info: TransferInfo):
+    """
+    Perform a withdrawal operation on a bank card via the external Bank Cards API.
+
+    Sends a PUT request to withdraw funds from the specified card.
+    If the withdrawal succeeds, returns a CardTransferResponse.
+    Otherwise, returns an APIErrorResponse.
+
+    Args:
+        card_lookup_hash (str): The hash identifier for the bank card.
+        withdraw_info (TransferInfo): Withdrawal details (amount and currency).
+
+    Returns:
+        CardTransferResponse | APIErrorResponse: Response depending on API result.
+    """
     
     # Check if API is online
     if is_bank_cards_api_online():
@@ -104,6 +161,20 @@ def withdraw_from_bank_card(card_lookup_hash: str, withdraw_info: TransferInfo):
     )
     
 def deposit_to_bank_card(card_lookup_hash: str, deposit_info: TransferInfo):
+    """
+    Perform a deposit operation on a bank card via the external Bank Cards API.
+
+    Sends a PUT request to deposit funds to the specified card.
+    If the deposit succeeds, returns a CardTransferResponse.
+    Otherwise, returns an APIErrorResponse.
+
+    Args:
+        card_lookup_hash (str): The hash identifier for the bank card.
+        deposit_info (TransferInfo): Deposit details (amount and currency).
+
+    Returns:
+        CardTransferResponse | APIErrorResponse: Response depending on API result.
+    """
     
     # Check if API is online
     if is_bank_cards_api_online():

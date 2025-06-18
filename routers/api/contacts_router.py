@@ -10,11 +10,32 @@ api_contacts_router = APIRouter(prefix='/api/users/contacts')
 
 @api_contacts_router.get(path="")
 def get_all_contacts_for_user(u_token = Header(), page: int = 1, page_size: int = 10):
+    """
+    Retrieve a paginated list of contacts for the authenticated user.
+
+    Args:
+        u_token (str): User authentication token.
+        page (int, optional): Page number for pagination. Defaults to 1.
+        page_size (int, optional): Number of contacts per page. Defaults to 10.
+
+    Returns:
+        ListContacts: Paginated contacts list.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     return contacts_service.get_all_contacts_for_user(user, page, page_size)
 
 @api_contacts_router.put(path="")
 def add_contact_to_user(contact: ContactModify, u_token = Header()):
+    """
+    Add a new contact to the user's contact list.
+
+    Args:
+        contact (ContactModify): The contact to add (by username).
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:
@@ -38,6 +59,16 @@ def add_contact_to_user(contact: ContactModify, u_token = Header()):
     
 @api_contacts_router.delete(path="")
 def remove_contact_from_user(contact: ContactModify, u_token = Header()):
+    """
+    Remove a contact from the user's contact list.
+
+    Args:
+        contact (ContactModify): The contact to remove (by username).
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
     
     try:

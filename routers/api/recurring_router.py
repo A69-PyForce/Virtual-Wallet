@@ -8,6 +8,15 @@ api_recurring_router = APIRouter(prefix="/api/users/recurring")
 
 @api_recurring_router.get("", response_model=list[RecurringOut])
 def get_user_recurring(u_token: str = Header()):
+    """
+    Retrieve all recurring transactions for the authenticated user.
+
+    Args:
+        u_token (str): User authentication token.
+
+    Returns:
+        list[RecurringOut]: List of recurring transactions.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -17,6 +26,16 @@ def get_user_recurring(u_token: str = Header()):
         return responses.InternalServerError()
 @api_recurring_router.post("")
 def create_recurring(data: RecurringCreate, u_token: str = Header()):
+    """
+    Create a new recurring transaction rule for the user.
+
+    Args:
+        data (RecurringCreate): Details of the recurring rule to create.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -28,6 +47,16 @@ def create_recurring(data: RecurringCreate, u_token: str = Header()):
 
 @api_recurring_router.delete("/{recurring_id}")
 def delete_recurring(recurring_id: int, u_token: str = Header()):
+    """
+    Delete a specific recurring transaction rule.
+
+    Args:
+        recurring_id (int): ID of the recurring rule to delete.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:

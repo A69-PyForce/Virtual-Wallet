@@ -1,10 +1,7 @@
-import traceback
 from data.models import *
-from fastapi import APIRouter, Header, Form
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Form, Request
 from utils.user_auth_token_utils import *
-from common import responses, authenticate
-from utils.regex_verifictaion_utils import *
+from common import  authenticate
 from fastapi.responses import RedirectResponse
 import common.template_config as template_config
 import services.contacts_service as contacts_service
@@ -14,6 +11,17 @@ templates = template_config.CustomJinja2Templates(directory='templates')
 
 @web_contacts_router.get('')
 def serve_contacts(request: Request, page: int = 1, page_size: int = 5):
+    """
+    Render contact management page with pagination.
+
+    Args:
+        request (Request): FastAPI request object.
+        page (int, optional): Page number for pagination.
+        page_size (int, optional): Number of contacts per page.
+
+    Returns:
+        HTML page with user's contacts.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -33,6 +41,16 @@ def serve_contacts(request: Request, page: int = 1, page_size: int = 5):
 
 @web_contacts_router.post('/add')
 def add_contact(request: Request, username: str = Form(...)):
+    """
+    Handle form submission to add a new contact.
+
+    Args:
+        request (Request): FastAPI request object.
+        username (str): Username of the contact to add.
+
+    Returns:
+        Redirect to contacts page with success or error message.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -59,6 +77,16 @@ def add_contact(request: Request, username: str = Form(...)):
 
 @web_contacts_router.post('/remove')
 def remove_contact(request: Request, username: str = Form(...)):
+    """
+    Handle form submission to remove an existing contact.
+
+    Args:
+        request (Request): FastAPI request object.
+        username (str): Username of the contact to remove.
+
+    Returns:
+        Redirect to contacts page with success or error message.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)

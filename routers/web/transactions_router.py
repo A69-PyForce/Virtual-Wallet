@@ -20,6 +20,15 @@ templates = template_config.CustomJinja2Templates(directory='templates')
 # GET: Show the form
 @web_transactions_router.get('/new')
 def serve_new_transaction(request: Request):
+    """
+    Render form to create a new transaction.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML page with new transaction form.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -169,6 +178,16 @@ def view_transaction_history(
 
 @web_transactions_router.post("/{transaction_id}/accept")
 async def confirm_tx(transaction_id: int, request: Request):
+    """
+    Confirm a pending transaction.
+
+    Args:
+        transaction_id (int): ID of transaction to confirm.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to transaction history.
+    """
     token = request.cookies.get("u-token")
     user = get_user_or_raise_401(token)
 
@@ -183,6 +202,16 @@ async def confirm_tx(transaction_id: int, request: Request):
 
 @web_transactions_router.post("/{transaction_id}/decline")
 async def decline_tx(transaction_id: int, request: Request):
+    """
+    Decline a pending transaction.
+
+    Args:
+        transaction_id (int): ID of transaction to decline.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to transaction history.
+    """
     token = request.cookies.get("u-token")
     user = get_user_or_raise_401(token)
 
@@ -196,6 +225,16 @@ async def decline_tx(transaction_id: int, request: Request):
 
 @web_transactions_router.get("/{transaction_id}")
 def view_transaction(transaction_id: int, request: Request):
+    """
+    Render details page for a specific transaction.
+
+    Args:
+        transaction_id (int): ID of transaction to view.
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML page with transaction details.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)

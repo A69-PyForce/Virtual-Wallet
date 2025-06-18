@@ -7,6 +7,15 @@ api_transaction_categories_router = APIRouter(prefix="/api/users/categories")
 
 @api_transaction_categories_router.get("/", response_model=list[TransactionCategoryOut])
 def get_all_categories(u_token: str = Header()):
+    """
+    Retrieve all transaction categories for the authenticated user.
+
+    Args:
+        u_token (str): User authentication token.
+
+    Returns:
+        list[TransactionCategoryOut]: List of user's categories.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -17,6 +26,16 @@ def get_all_categories(u_token: str = Header()):
 
 @api_transaction_categories_router.post("", response_model=TransactionCategoryOut)
 def create_category(category_data: TransactionCategoryCreate, u_token: str = Header()):
+    """
+    Create a new transaction category for the user.
+
+    Args:
+        category_data (TransactionCategoryCreate): New category data.
+        u_token (str): User authentication token.
+
+    Returns:
+        TransactionCategoryOut: Created category object.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -27,6 +46,16 @@ def create_category(category_data: TransactionCategoryCreate, u_token: str = Hea
 
 @api_transaction_categories_router.delete("/{category_id}")
 def delete_category(category_id: int, u_token: str = Header()):
+    """
+    Delete a specific transaction category for the user.
+
+    Args:
+        category_id (int): ID of the category to delete.
+        u_token (str): User authentication token.
+
+    Returns:
+        Success or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:
@@ -40,6 +69,17 @@ def delete_category(category_id: int, u_token: str = Header()):
 
 @api_transaction_categories_router.put("/{category_id}", response_model=TransactionCategoryOut)
 def update_category(category_id: int, category_data: TransactionCategoryCreate, u_token: str = Header()):
+    """
+    Update a specific transaction category for the user.
+
+    Args:
+        category_id (int): ID of the category to update.
+        category_data (TransactionCategoryCreate): Updated category data.
+        u_token (str): User authentication token.
+
+    Returns:
+        TransactionCategoryOut: Updated category object or error response.
+    """
     user = authenticate.get_user_or_raise_401(u_token)
 
     try:

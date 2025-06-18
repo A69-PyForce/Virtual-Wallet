@@ -19,6 +19,17 @@ def list_users(
     search: str = Query("", description="Search by username, email or phone"),
     page:   int = Query(1, ge=1, description="Page number"),
 ):
+    """
+    Render admin panel page to list all users with pagination and search.
+
+    Args:
+        request (Request): FastAPI request object.
+        search (str, optional): Search filter for users.
+        page (int, optional): Page number for pagination.
+
+    Returns:
+        HTML page with list of users.
+    """
     admin = authenticate.get_user_if_token(request)
     if not admin or not admin.is_admin:
         return RedirectResponse("/", status_code=302)
@@ -50,6 +61,16 @@ def list_users(
 
 @web_admin_router.post("/users/{user_id}/approve")
 def approve_user_web(request: Request, user_id: int):
+    """
+    Approve a user's registration from admin panel.
+
+    Args:
+        request (Request): FastAPI request object.
+        user_id (int): ID of user to approve.
+
+    Returns:
+        Redirects back to admin user list page.
+    """
     admin = authenticate.get_user_if_token(request)
     if not admin or not admin.is_admin:
         return RedirectResponse("/", status_code=302)
@@ -58,6 +79,16 @@ def approve_user_web(request: Request, user_id: int):
 
 @web_admin_router.post("/users/{user_id}/block")  # POST /admin/users/{id}/block
 def block_user(request: Request, user_id: int):
+    """
+    Block a user account from admin panel.
+
+    Args:
+        request (Request): FastAPI request object.
+        user_id (int): ID of user to block.
+
+    Returns:
+        Redirects back to admin user list page.
+    """
     admin = authenticate.get_user_if_token(request)
     if not admin or not admin.is_admin:
         return RedirectResponse("/", status_code=302)
@@ -66,6 +97,16 @@ def block_user(request: Request, user_id: int):
 
 @web_admin_router.post("/users/{user_id}/unblock")  # POST /admin/users/{id}/unblock
 def unblock_user(request: Request, user_id: int):
+    """
+    Unblock a previously blocked user account from admin panel.
+
+    Args:
+        request (Request): FastAPI request object.
+        user_id (int): ID of user to unblock.
+
+    Returns:
+        Redirects back to admin user list page.
+    """
     admin = authenticate.get_user_if_token(request)
     if not admin or not admin.is_admin:
         return RedirectResponse("/", status_code=302)
@@ -74,6 +115,16 @@ def unblock_user(request: Request, user_id: int):
 
 @web_admin_router.post("/transactions/{transaction_id}/deny")  # POST /admin/transactions/{id}/deny
 def deny(request: Request, transaction_id: int):
+    """
+    Deny a pending transaction from admin panel.
+
+    Args:
+        request (Request): FastAPI request object.
+        transaction_id (int): ID of transaction to deny.
+
+    Returns:
+        Redirects back to admin user list page.
+    """
     admin = authenticate.get_user_if_token(request)
     if not admin or not admin.is_admin:
         return RedirectResponse("/", status_code=302)
@@ -84,13 +135,14 @@ def deny(request: Request, transaction_id: int):
 def view_user(request: Request,
     username: str,
     start_date: str = "",
-    end_date:   str = "",
+    end_date: str = "",
     direction: Literal["incoming", "outgoing", "all"] | None = None,
-    sort_by:    Literal["date", "amount"] = "date",
+    sort_by: Literal["date", "amount"] = "date",
     sort_order: Literal["asc", "desc"] = "desc",
-    limit:      int = 30,
-    offset:     int = 0,
+    limit: int = 30,
+    offset: int = 0
 ):
+
     admin = authenticate.get_user_if_token(request)
     if not admin or not admin.is_admin:
         return RedirectResponse("/", status_code=302)

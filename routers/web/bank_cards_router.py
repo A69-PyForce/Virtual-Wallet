@@ -13,6 +13,15 @@ web_bank_cards_router = APIRouter(prefix='/users/cards')
 
 @web_bank_cards_router.get('/new')
 def serve_add_card_form(request: Request):
+    """
+    Render form for adding a new bank card.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML page with new card form.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
@@ -31,6 +40,7 @@ def process_add_card(
         nickname: str = Form(None),
         image_url: str = Form(None)
 ):
+
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
@@ -62,6 +72,15 @@ def process_add_card(
         })
 @web_bank_cards_router.get("/manage")
 def manage_user_cards(request: Request):
+    """
+    Render card management page showing all linked cards for the user.
+
+    Args:
+        request (Request): FastAPI request object.
+
+    Returns:
+        HTML page with user's bank cards.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse("/users/login", status_code=302)
@@ -84,6 +103,17 @@ def manage_user_cards(request: Request):
         })
 @web_bank_cards_router.post("/{card_id}/deposit")
 def deposit_to_card(card_id: int, amount: float = Form(...), request: Request = None):
+    """
+    Deposit funds from user balance to a bank card.
+
+    Args:
+        card_id (int): ID of the card.
+        amount (float): Amount to deposit.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to card management page.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
@@ -98,6 +128,17 @@ def deposit_to_card(card_id: int, amount: float = Form(...), request: Request = 
 
 @web_bank_cards_router.post("/{card_id}/withdraw")
 def withdraw_from_card(card_id: int, amount: float = Form(...), request: Request = None):
+    """
+    Withdraw funds from a bank card to user's balance.
+
+    Args:
+        card_id (int): ID of the card.
+        amount (float): Amount to withdraw.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to card management page.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
@@ -112,6 +153,17 @@ def withdraw_from_card(card_id: int, amount: float = Form(...), request: Request
 
 @web_bank_cards_router.post("/{card_id}/nickname")
 def update_card_nickname(card_id: int, nickname: str = Form(...), request: Request = None):
+    """
+    Update nickname for a specific bank card.
+
+    Args:
+        card_id (int): ID of the card.
+        nickname (str): New nickname value.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to card management page.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
@@ -126,6 +178,17 @@ def update_card_nickname(card_id: int, nickname: str = Form(...), request: Reque
 
 @web_bank_cards_router.post("/{card_id}/image")
 def update_card_image(card_id: int, image_url: str = Form(...), request: Request = None):
+    """
+    Update image URL for a specific bank card.
+
+    Args:
+        card_id (int): ID of the card.
+        image_url (str): New image URL value.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to card management page.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
@@ -140,6 +203,16 @@ def update_card_image(card_id: int, image_url: str = Form(...), request: Request
 
 @web_bank_cards_router.post("/{card_id}/delete")
 def delete_card(card_id: int, request: Request = None):
+    """
+    Delete a bank card from user's account.
+
+    Args:
+        card_id (int): ID of the card.
+        request (Request): FastAPI request object.
+
+    Returns:
+        Redirect to card management page.
+    """
     user = authenticate.get_user_if_token(request)
     if not user:
         return RedirectResponse('/users/login', status_code=302)
