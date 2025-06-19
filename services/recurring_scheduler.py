@@ -1,8 +1,11 @@
 import asyncio
+from common.logger import get_logger
 from datetime import datetime, timedelta
 from data.database import read_query, update_query
 from data.models import TransactionTemplate
 from services.transactions_service import create_transaction_from_recurring
+
+logger = get_logger(name=__name__)
 
 async def process_due_recurring():
     """
@@ -16,7 +19,7 @@ async def process_due_recurring():
     Runs indefinitely as an asyncio task.
     """
     while True:
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Checking for due recurring...")
+        logger.info(msg="Checking for due recurring transactions.")
 
         sql = """
             SELECT r.id, r.transaction_id, r.interval, r.interval_type,
@@ -34,7 +37,7 @@ async def process_due_recurring():
              category_id, name, description,
              sender_id, receiver_id, amount, currency_id) = row
 
-            print(f"Executing recurring ID {recurring_id} (Tx from {sender_id} to {receiver_id})")
+            logger.info(msg=f"Executing recurring transaction ID {recurring_id}, from user ID {sender_id} to {receiver_id}.")
 
             template = TransactionTemplate(
                 sender_id=sender_id,
@@ -49,7 +52,7 @@ async def process_due_recurring():
             created = await create_transaction_from_recurring(template)
 
             if not created:
-                print(f"Failed to execute recurring ID {recurring_id}")
+                logger.error(msg=f"Failed to execute recurring transaction ID {recurring_id}.")
                 continue
 
             now = datetime.now()
@@ -57,8 +60,10 @@ async def process_due_recurring():
                 next_exec_date = now + timedelta(days=interval)
             elif interval_type == "HOURS":
                 next_exec_date = now + timedelta(hours=interval)
+            elif interval_type == "MINUTES":
+                next_exec_date = now + timedelta(minutes=interval)
             else:
-                print(f"Invalid interval type: {interval_type}")
+                logger.error(msg=f"Invalid recurring transaction interval type: {interval_type}.")
                 continue
 
             # updates the next data
@@ -70,7 +75,7 @@ async def process_due_recurring():
             elif interval_type == "MINUTES":
                 next_exec_date = now + timedelta(minutes=interval)
             else:
-                print(f"Invalid interval type: {interval_type}")
+                logger.error(msg=f"Invalid recurring transaction interval type: {interval_type}.")
                 continue
 
             # updates the next data
@@ -79,7 +84,7 @@ async def process_due_recurring():
                 (next_exec_date, recurring_id)
             )
 
-            print(f"Recurring ID {recurring_id} executed and scheduled next.")
+            logger.info(msg=f"Recurring transaction ID {recurring_id} executed and scheduled next.")
 
-        print(f"Recurring check complete. Sleeping for 30 seconds.")
-        await asyncio.sleep(30)
+        logger.info(msg=f"Recurring transactions check complete. Sleeping for 60 seconds.")
+        await asyncio.sleep(60)

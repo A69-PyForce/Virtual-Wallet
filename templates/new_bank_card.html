@@ -13,9 +13,9 @@
     {{ load_navbar(get_user(request)) }}
 
     <!-- Add Bank Card -->
-    <div class="container">
+    <div class="container" style="max-width: 43rem;">
         <div id="addCard" class="page">
-            <h2>Add New Bank Card</h2>
+            <h2 style="margin-bottom: 1rem;">Add New Bank Card</h2>
             {% if error_message %}
             <div class="error-message-container">
                 <p class="error-message">{{ error_message }}</p>
@@ -24,42 +24,31 @@
             <form action="/users/cards/new" method="post">
                 <div class="form-group">
                     <label for="card_number">Card Number</label>
-                    <input type="text" id="card_number" name="card_number" placeholder="1234 5678 9012 3456"
-                        maxlength="16" value="{{ card_number or '' }}" required>
+                    <input type="text" id="card_number" name="card_number" placeholder="1111 2222 3333 4444"
+                        class="form" maxlength="16" value="{{ card_number or '' }}" required>
                 </div>
                 <div class="form-group">
                     <label for="expiration_date">Expiration Date</label>
-                    <input type="text" id="expiration_date" name="expiration_date" placeholder="MM/YY" maxlength="5"
-                        value="{{ expiration_date or '' }}" required>
+                    <input type="text" id="expiration_date" name="expiration_date" placeholder="01/29" maxlength="5"
+                        class="form" value="{{ expiration_date or '' }}" required>
                 </div>
                 <div class="form-group">
                     <label for="card_holder">Card Holder Name</label>
-                    <input type="text" id="card_holder" name="card_holder" value="{{ card_holder or '' }}" required>
+                    <input type="text" id="card_holder" name="card_holder" class="form" placeholder="Elliot Alderson"
+                        value="{{ card_holder or '' }}" required>
                 </div>
                 <div class="form-group">
                     <label for="ccv">CCV</label>
-                    <input type="text" id="ccv" name="ccv" placeholder="123" maxlength="4" value="{{ ccv or '' }}"
-                        required>
+                    <input type="text" id="ccv" name="ccv" placeholder="123" maxlength="4" class="form"
+                        value="{{ ccv or '' }}" required>
                 </div>
                 <div class="form-group">
                     <label for="card_type">Card Type</label>
-                    <select id="card_type" name="card_type" required>
+                    <select id="card_type" name="card_type" class="form" required>
                         <option value="">Select Type</option>
                         <option value="DEBIT" {{ 'selected' if card_type=='DEBIT' else '' }}>Debit</option>
                         <option value="CREDIT" {{ 'selected' if card_type=='CREDIT' else '' }}>Credit</option>
                     </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="nickname">Card Nickname (optional)</label>
-                    <input type="text" id="nickname" name="nickname" maxlength="40" placeholder="My Travel Card"
-                        value="{{ nickname or '' }}">
-                </div>
-
-                <div class="form-group">
-                    <label for="image_url">Image URL (optional)</label>
-                    <input type="text" id="image_url" name="image_url" placeholder="https://..."
-                        value="{{ image_url or '' }}">
                 </div>
 
                 <button type="submit" class="btn">Add Card</button>

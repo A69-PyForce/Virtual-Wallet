@@ -22,7 +22,7 @@
     }
 
     .form-header {
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
       color: #333;
     }
 
@@ -35,20 +35,6 @@
       margin-bottom: 0.5rem;
       color: #555;
       font-weight: 500;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
     }
 
     .image-preview {
@@ -89,13 +75,13 @@
             <label for="image">Category Image</label>
             <img src="{{ category.image_url or '/static/images/default_category_image.png' }}"
               alt="{{ category.category_name }}" class="image-preview">
-            <input type="file" id="image" name="file" accept="image/*" onchange="previewImage(this)">
+            <input type="file" id="image" class="form" name="file" accept="image/*" onchange="previewImage(this)">
           </div>
 
           <div class="form-group">
             <label for="name">Category Name</label>
-            <input type="text" id="name" name="name" required value="{{ category.name if category else '' }}"
-              placeholder="Enter category name">
+            <input type="text" id="name" class="form" name="name" required
+              value="{{ category.name if category else '' }}" class="form" placeholder="Enter category name">
           </div>
 
           <div class="button-group">

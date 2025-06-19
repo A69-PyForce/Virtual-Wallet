@@ -1,6 +1,6 @@
 from common.error_handlers import register_error_handlers
 from utils.currencies_utils import dump_all_currencies
-from recurring_scheduler import process_due_recurring
+from services.recurring_scheduler import process_due_recurring
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi import FastAPI

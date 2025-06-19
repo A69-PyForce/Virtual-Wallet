@@ -1,7 +1,10 @@
+from common.logger import get_logger
 from data.models import *
 import requests
 import socket
 import os
+
+logger = get_logger(name=__name__)
 
 # Response model for returning an error from API
 class APIErrorResponse(BaseModel):
@@ -99,14 +102,16 @@ def get_bank_card_info_response(card_info: BankCardEncryptInfo):
                 currency_code=response["currency_code"]
             )
             
-        # Otherwise return error response
+        # Otherwise log and return error response
         else:
+            logger.warning(msg=f"Bank Cards API returned error response with code {response.status_code}.")
             return APIErrorResponse(
                 detail=response.json()["detail"],
                 status_code=response.status_code
             )
     
-    # If API is not online return this error response
+    # If API is not online log and return error response
+    logger.error(msg="Bank Cards API is offline.")
     return APIErrorResponse(
         detail="Bank Cards API is offline.",
         status_code=503
@@ -147,14 +152,17 @@ def withdraw_from_bank_card(card_lookup_hash: str, withdraw_info: TransferInfo):
                 currency_code=response["currency_code"],
                 transfer_type=response["transfer_type"]
             )
-        # If status code isn't 200 return an error object
+            
+        # Otherwise log and return error response
         else:
+            logger.warning(msg=f"Bank Cards API returned error response with code {response.status_code}.")
             return APIErrorResponse(
                 detail=response.json()["detail"],
                 status_code=response.status_code
             )
             
-    # If API was offline 
+    # If API is not online log and return error response
+    logger.error(msg="Bank Cards API is offline.")
     return APIErrorResponse(
         detail="Bank Cards API is offline.",
         status_code=503
@@ -195,14 +203,17 @@ def deposit_to_bank_card(card_lookup_hash: str, deposit_info: TransferInfo):
                 currency_code=response["currency_code"],
                 transfer_type=response["transfer_type"]
             )
-        # If status code isn't 200 return an error object
+            
+        # Otherwise log and return error response
         else:
+            logger.warning(msg=f"Bank Cards API returned error response with code {response.status_code}.")
             return APIErrorResponse(
                 detail=response.json()["detail"],
                 status_code=response.status_code
             )
             
-    # If API was offline 
+    # If API is not online log and return error response
+    logger.error(msg="Bank Cards API is offline.")
     return APIErrorResponse(
         detail="Bank Cards API is offline.",
         status_code=503

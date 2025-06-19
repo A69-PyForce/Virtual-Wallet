@@ -76,7 +76,7 @@
           <input type="hidden" name="receiver_id" value="{{ viewed_user.id }}" />
           <div class="mb-3">
             <label for="direction" class="form-label">Direction</label>
-            <select id="direction" name="direction" class="form-select">
+            <select id="direction" name="direction" class="form">
               <option value="all" {% if direction=="all" or not direction %}selected{% endif %}>All</option>
               <option value="incoming" {% if direction=="incoming" %}selected{% endif %}>Incoming</option>
               <option value="outgoing" {% if direction=="outgoing" %}selected{% endif %}>Outgoing</option>
@@ -85,23 +85,23 @@
           <div class="row gx-2 mb-3">
             <div class="col">
               <label for="start_date" class="form-label">From</label>
-              <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="form" />
+              <input type="date" id="start_date" class="form" name="start_date" value="{{ start_date }}" class="form" />
             </div>
             <div class="col">
               <label for="end_date" class="form-label">To</label>
-              <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="form" />
+              <input type="date" id="end_date" class="form" name="end_date" value="{{ end_date }}" class="form" />
             </div>
           </div>
           <div class="mb-3">
             <label for="sort_by" class="form-label">Sort by</label>
-            <select id="sort_by" name="sort_by" class="form-select">
+            <select id="sort_by" name="sort_by" class="form">
               <option value="date" {% if sort_by=="date" %}selected{% endif %}>Date</option>
               <option value="amount" {% if sort_by=="amount" %}selected{% endif %}>Amount</option>
             </select>
           </div>
           <div class="mb-3" style="margin-bottom: 1rem;">
             <label for="sort_order" class="form-label">Order</label>
-            <select id="sort_order" name="sort_order" class="form-select">
+            <select id="sort_order" name="sort_order" class="form">
               <option value="desc" {% if sort_order=="desc" %}selected{% endif %}>Descending</option>
               <option value="asc" {% if sort_order=="asc" %}selected{% endif %}>Ascending</option>
             </select>

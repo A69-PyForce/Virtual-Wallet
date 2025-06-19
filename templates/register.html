@@ -25,34 +25,34 @@
 
                 <div class="form-group">
                     <label for="username">Username <span class="required">*</span></label>
-                    <input type="text" id="username" name="username" value="{{ username or '' }}" required minlength="3"
-                        maxlength="20" title="Username must contain only letters, numbers, and underscores">
+                    <input type="text" id="username" class="form" name="username" value="{{ username or '' }}" required
+                        minlength="3" maxlength="20"
+                        title="Username must contain only letters, numbers, and underscores">
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email Address <span class="required">*</span></label>
-                    <input type="email" id="email" name="email" value="{{ email or '' }}" required minlength="6"
-                        maxlength="40"
+                    <input type="email" id="email" class="form" name="email" value="{{ email or '' }}" required
+                        minlength="6" maxlength="40"
                         title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password <span class="required">*</span></label>
-                    <input type="password" id="password" name="password" required minlength="4" maxlength="40"
+                    <input type="password" id="password" class="form" name="password" required minlength="4"
+                        maxlength="40"
                         title="Password must be at least 8 symbols and should contain capital letter, digit and a special symbol.">
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="phone_number">Phone Number <span class="required">*</span></label>
-                        <input type="tel" id="phone_number" name="phone_number" value="{{ phone_number or '' }}"
-                            placeholder="+359 00 123 4567">
-                    </div>
+                <div class="form-group">
+                    <label for="phone_number">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone_number" class="form" name="phone_number"
+                        value="{{ phone_number or '' }}" placeholder="+359 00 123 4567">
                 </div>
 
                 <div class="form-group">
                     <label for="currency_code">Currency <span class="required">*</span></label>
-                    <select id="currency_code" name="currency_code" required>
+                    <select id="currency_code" name="currency_code" class="form" required>
                         <option value="">Select Currency</option>
                         {% for code, name in currencies %}
                         <option value="{{ code }}" {{ 'selected' if currency_code==code else '' }}>{{ code }} - {{ name

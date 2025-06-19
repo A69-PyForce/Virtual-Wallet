@@ -8,11 +8,6 @@
   {% from 'macros.html' import load_navbar, load_footer %}
   <title>Card Details</title>
   <style>
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
     .alert {
       padding: 16px;
       border-radius: 8px;
@@ -57,6 +52,7 @@
       padding: 1.5rem;
       border-radius: 12px;
       border: 1px solid #e9ecef;
+
     }
 
     .actions-section h3 {
@@ -211,9 +207,12 @@
     }
 
     .action-form {
-      margin-bottom: 16px;
       display: flex;
+      align-items: center;
       gap: 12px;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 10px;
     }
 
     .action-input {
@@ -230,16 +229,12 @@
       border-color: #667eea;
     }
 
-    .action-btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .action-btn.secondary {
+      background: #6c757d;
+    }
+
+    .action-btn.danger {
+      background: #dc3545;
     }
 
     .divider {
@@ -253,7 +248,7 @@
 <body>
   {{ load_navbar(user) }}
 
-  <div class="container">
+  <div class="container" style="max-width: 1100px;">
     <div id="dashboard" class="page" style="padding-bottom: 0.01rem;">
 
       {% if error_message %}
@@ -291,32 +286,32 @@
             <h4>Transactions</h4>
             <div class="transaction-actions-container">
               <form method="post" action="/users/cards/{{ card_id }}/deposit" class="action-form">
-                <input type="number" name="amount" class="action-input" placeholder="Deposit Amount" step="0.01"
-                  required>
-                <button class="btn btn-primary">Deposit</button>
+                <input type="number" name="amount" class="form" placeholder="Deposit Amount" step="0.01" required>
+                <button class="btn">Deposit</button>
               </form>
 
               <form method="post" action="/users/cards/{{ card_id }}/withdraw" class="action-form">
-                <input type="number" name="amount" class="action-input" placeholder="Withdraw Amount" step="0.01"
-                  required>
-                <button class="btn btn-accept">Withdraw</button>
+                <input type="number" name="amount" class="form" placeholder="Withdraw Amount" step="0.01" required>
+                <button class="btn" style="background-color: #259d57;">Withdraw</button>
               </form>
             </div>
           </div>
 
           <div class="action-group">
             <h4>Card Settings</h4>
-            <div class="update-actions-container">
+            <div class="transaction-actions-container">
               <form method="post" action="/users/cards/{{ card_id }}/nickname" class="action-form">
                 <input type="text" name="nickname" class="action-input" placeholder="New Nickname" maxlength="40"
                   value="{{ nickname or '' }}">
-                <button class="btn btn-secondary">Update Nickname</button>
+                <button class="btn secondary" type="submit">Update Nickname</button>
               </form>
-
-              <form method="post" action="/users/cards/{{ card_id }}/image" class="action-form">
-                <input type="text" name="image_url" class="action-input" placeholder="New Image URL"
-                  value="{{ image_url or '' }}">
-                <button class="btn btn-secondary">Update Image</button>
+              <form method="post" action="/users/cards/{{ card_id }}/image_upload" enctype="multipart/form-data"
+                class="action-form" id="cardImageForm">
+                <div class="file-upload-wrapper">
+                  <label for="cardImageInput" class="file-upload-label" id="fileLabel">Choose Image</label>
+                  <input type="file" name="file" id="cardImageInput" accept="image/*" class="file-upload-input">
+                </div>
+                <button class="btn" type="submit">Upload Image</button>
               </form>
             </div>
           </div>
@@ -395,6 +390,25 @@
         hideDeleteConfirmation();
       }
     });
+
+    const cardImageInput = document.getElementById('cardImageInput');
+    const cardImagePreview = document.getElementById('cardImagePreview');
+    const fileLabel = document.getElementById('fileLabel');
+    if (cardImageInput) {
+      cardImageInput.onchange = function (event) {
+        const file = event.target.files[0];
+        if (file && file.type.match('image.*')) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            cardImagePreview.src = e.target.result;
+          }
+          reader.readAsDataURL(file);
+          if (fileLabel) fileLabel.textContent = file.name;
+        } else {
+          if (fileLabel) fileLabel.textContent = 'Choose Image';
+        }
+      }
+    }
   </script>
 
   {{ load_footer() }}

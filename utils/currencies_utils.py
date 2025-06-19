@@ -1,6 +1,8 @@
 from config.env_loader import CURRENCIES_CACHE_FILE, EXCHANGE_RATE_API_KEY
 import services.currencies_service as currencies_service
 from pydantic import BaseModel, StringConstraints
+from data.database import read_query
+from common.logger import get_logger
 from mariadb import IntegrityError
 from typing import Annotated
 import traceback
@@ -8,7 +10,7 @@ import httpx
 import json
 import os
 
-from data.database import read_query
+logger = get_logger(name=__name__)
 
 # Custom exception for this file
 class CurrenciesUtils(Exception):
@@ -46,7 +48,7 @@ def cache_all_currencies():
             with open(CURRENCIES_CACHE_FILE, "r") as f:
                 ALL_CURRENCIES = tuple(json.load(f))
                 
-            print(f"[INFO / CURRENCIES UTILS] Loaded currency codes from {CURRENCIES_CACHE_FILE}.")
+            logger.info(f"Loaded currency codes from {CURRENCIES_CACHE_FILE}.")
         
         # Else fetch data from API and create the cache file
         else:
@@ -63,11 +65,11 @@ def cache_all_currencies():
                 with open(CURRENCIES_CACHE_FILE, "w") as f:
                     json.dump(list(ALL_CURRENCIES), f)
                     
-            print(f"[INFO / CURRENCIES UTILS] Called API and cached currency codes in {CURRENCIES_CACHE_FILE}.")
+            logger.info(msg=f"Called API and cached currency codes in {CURRENCIES_CACHE_FILE}.")
             
     except Exception:
         print(traceback.format_exc())
-        raise CurrenciesUtils("[ERR / CURRENCIES UTILS] An issue occured while working with the currency codes.")
+        raise CurrenciesUtils("An issue occured while working with the currency codes.")
 
 def dump_all_currencies():
     
@@ -77,9 +79,9 @@ def dump_all_currencies():
         
         try:
             currencies_service.add_currency(currency)
-            print(f"[INFO / CURRENCIES UTILS] {currency} added to database.")
+            logger.info(msg=f"{currency} added to database.")
         except IntegrityError: # DB will throw an integrety error if code/name already exist
-            print(f"[WARN / CURRENCIES UTILS] {currency} already exists in database.")
+            logger.warning(msg=f"{currency} already exists in database.")
             pass
         
 # Call cache func to ensure ALL_CURRENCIES exists

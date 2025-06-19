@@ -6,6 +6,11 @@ from data.database import insert_query
 from data.models import BankCardCreateInfo, BankCardEncryptInfo, TransferInfo, BankCardNickname, BankCardImageURL
 from services import bank_cards_service, users_service, bank_cards_api_client
 from utils.bank_card_utils import encrypt_card_info
+from PIL import Image
+import io
+import cloudinary
+import cloudinary.uploader
+from config.env_loader import CLDNR_CONFIG
 
 templates = template_config.CustomJinja2Templates(directory='templates')
 web_bank_cards_router = APIRouter(prefix='/users/cards')
@@ -26,7 +31,7 @@ def serve_add_card_form(request: Request):
     if not user:
         return RedirectResponse('/users/login', status_code=302)
 
-    return templates.TemplateResponse(request=request, name='new_card.html', context={"user": user})
+    return templates.TemplateResponse(request=request, name='new_bank_card.html', context={"user": user})
 
 
 @web_bank_cards_router.post('/new')
@@ -93,7 +98,7 @@ def process_add_card(
         print(traceback.format_exc())
         error_message = "An unexpected error occurred. Please try again later."
     
-    return templates.TemplateResponse("new_card.html", context={
+    return templates.TemplateResponse("new_bank_card.html", context={
         "request": request,
          "error_message": error_message,
         "user": user,
@@ -274,3 +279,37 @@ def delete_card(card_id: int, request: Request = None):
         print(traceback.format_exc())
 
     return RedirectResponse("/users/dashboard", status_code=302)
+
+@web_bank_cards_router.post("/{card_id}/image_upload")
+async def upload_card_image(card_id: int, request: Request, file: UploadFile = File(...)):
+    """
+    Upload and update the image for a specific bank card.
+    Args:
+        card_id (int): ID of the card.
+        request (Request): FastAPI request object.
+        file (UploadFile): Uploaded image file.
+    Returns:
+        Redirect to card management page.
+    """
+    user = authenticate.get_user_if_token(request)
+    if not user:
+        return RedirectResponse('/users/login', status_code=302)
+    
+    image_url = None
+    if CLDNR_CONFIG and file and file.filename:
+        try:
+            image_contents = await file.read()
+            image = Image.open(io.BytesIO(image_contents))
+            resized_image = image.resize((368, 180))
+            buffer = io.BytesIO()
+            resized_image.save(buffer, format=image.format or "JPEG")
+            buffer.seek(0)
+            result = cloudinary.uploader.upload(buffer, folder="virtual-wallet-card-images")
+            image_url = result["secure_url"]
+            
+        except Exception:
+            print(traceback.format_exc())
+            image_url = None
+    if image_url:
+        bank_cards_service.change_user_card_image_url(image_url, card_id, user)
+    return RedirectResponse(f"/users/cards/{card_id}", status_code=302)

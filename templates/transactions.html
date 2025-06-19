@@ -75,32 +75,6 @@
       margin-bottom: 1rem;
     }
 
-    .filters-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-
-    .form-group {
-      margin-bottom: 0;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #495057;
-      font-weight: 500;
-    }
-
-    .form-select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      font-size: 1rem;
-      background-color: white;
-    }
-
     .transactions-table {
       width: 100%;
       background: white;
@@ -161,58 +135,6 @@
       color: #721c24;
     }
 
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-top: 2rem;
-    }
-
-    .pagination a {
-      text-decoration: none;
-    }
-
-    .pagination button {
-      padding: 0.5rem 1rem;
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .pagination button:hover {
-      background: #f0f0f0;
-    }
-
-    .pagination button.active {
-      background: #007bff;
-      color: white;
-      border-color: #007bff;
-    }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 4px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-primary {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #0056b3;
-    }
-
     .no-transactions {
       text-align: center;
       padding: 3rem;
@@ -243,9 +165,10 @@
     }
 
     .category-image {
-      width: 24px;
-      height: 24px;
-      border-radius: 4px;
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      margin-bottom: 0rem;
       object-fit: cover;
     }
 
@@ -253,18 +176,12 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
-      margin-bottom: 2rem;
     }
 
     .filter-group {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-    }
-
-    .btn-sm {
-      padding: 0.5rem 0.5rem;
-      font-size: 0.875rem;
     }
   </style>
 </head>
@@ -311,13 +228,11 @@
         <!-- Sort Options -->
         <div class="flex items-center space-x-2">
           <label for="sort_by" class="text-sm font-medium text-gray-700">Sort by:</label>
-          <select name="sort_by" id="sort_by"
-            class="block w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+          <select name="sort_by" id="sort_by" class="form">
             <option value="date" {% if sort_by=='date' or sort_by=='created_at' %}selected{% endif %}>Date</option>
             <option value="amount" {% if sort_by=='amount' %}selected{% endif %}>Amount</option>
           </select>
-          <select name="sort_order" id="sort_order"
-            class="block w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+          <select name="sort_order" id="sort_order" class="form">
             <option value="desc" {% if sort_order=='desc' %}selected{% endif %}>Descending</option>
             <option value="asc" {% if sort_order=='asc' %}selected{% endif %}>Ascending</option>
           </select>
