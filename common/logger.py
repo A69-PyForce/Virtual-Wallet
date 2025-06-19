@@ -19,7 +19,7 @@ class _ColorFormatter(logging.Formatter):
         logger_name = record.name
         function = getattr(record, "function", "unknown")
         msg = record.getMessage()
-        return f"[{time} ][{logger_name} / {levelname}]: [{function}] {msg}"
+        return f"[{time}][{logger_name} / {levelname}]: [{function}] {msg}"
 
 class _SafeFormatter(logging.Formatter):
     def format(self, record):
