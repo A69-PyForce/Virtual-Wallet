@@ -31,10 +31,9 @@ class _FunctionLogger(logging.Logger):
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
         if extra is None:
             extra = {}
-
-        # Go 3 frames up: this method → logger.[level]() → caller
+        
         frame = inspect.currentframe()
-        for _ in range(3):
+        for _ in range(2):
             if frame is not None:
                 frame = frame.f_back
 
